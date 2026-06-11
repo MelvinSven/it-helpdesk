@@ -35,8 +35,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/tickets/{ticket}/status', [TicketStatusController::class, 'update'])->name('tickets.status');
     Route::post('/tickets/{ticket}/comments', [TicketCommentController::class, 'store'])->name('tickets.comments.store');
 
-    // Electronic item master data. Reading is open to all roles; create/update/
-    // delete are gated to admins by ItemPolicy inside the controller.
+    // Electronic item master data. Admin-only end to end (read + write), gated
+    // by ItemPolicy inside the controller. Staff/IT Support never hit these
+    // routes; they borrow via the borrow form, which loads items on its own.
     Route::get('/items', [ItemController::class, 'index'])->name('items.index');
     Route::get('/items/create', [ItemController::class, 'create'])->name('items.create');
     Route::post('/items', [ItemController::class, 'store'])->name('items.store');

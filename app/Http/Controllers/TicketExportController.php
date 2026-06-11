@@ -15,7 +15,7 @@ class TicketExportController extends Controller
 {
     public function __invoke(Request $request): StreamedResponse
     {
-        $this->authorize('viewAny', Ticket::class);
+        $this->authorize('export', Ticket::class);
 
         $user = $request->user();
         $query = Ticket::query()->with([

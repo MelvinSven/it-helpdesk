@@ -19,6 +19,8 @@ interface Props {
 export default function Index({ tickets, categories, filters }: Props) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === 'admin';
+    // Export is for admin and IT Support only; staff cannot bulk-export.
+    const canExport = isAdmin || auth.user.role === 'it_support';
 
     const [form, setForm] = useState({
         search: filters.search ?? '',
@@ -104,16 +106,18 @@ export default function Index({ tickets, categories, filters }: Props) {
                     </select>
                 </div>
                 <div className="flex items-center gap-2">
-                    <a
-                        href={`${route('tickets.export')}?${new URLSearchParams(
-                            Object.entries(form).filter(
-                                ([, v]) => v !== '' && v != null,
-                            ) as [string, string][],
-                        ).toString()}`}
-                        className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                        Ekspor Excel
-                    </a>
+                    {canExport && (
+                        <a
+                            href={`${route('tickets.export')}?${new URLSearchParams(
+                                Object.entries(form).filter(
+                                    ([, v]) => v !== '' && v != null,
+                                ) as [string, string][],
+                            ).toString()}`}
+                            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                            Ekspor Excel
+                        </a>
+                    )}
                     <Link
                         href={route('tickets.create')}
                         className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"

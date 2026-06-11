@@ -86,15 +86,24 @@ class TicketController extends Controller
     {
         $this->authorize('view', $ticket);
 
-        $ticket->load([
+        $user = request()->user();
+
+        // Activity log (Riwayat) is for admin and IT Support only; staff never
+        // see it, so the relation isn't even loaded for them.
+        $canViewActivities = $user->isAdmin() || $user->isItSupport();
+
+        $relations = [
             'requestor:id,name,user_id,role',
             'assignee:id,name,user_id,role',
             'category:id,name',
             'comments.user:id,name,role',
-            'activities.user:id,name,role',
-        ]);
+        ];
 
-        $user = request()->user();
+        if ($canViewActivities) {
+            $relations[] = 'activities.user:id,name,role';
+        }
+
+        $ticket->load($relations);
 
         return Inertia::render('Tickets/Show', [
             'ticket' => $ticket,
@@ -103,6 +112,7 @@ class TicketController extends Controller
                 'update_status' => $user->can('updateStatus', $ticket),
                 'comment' => $user->can('comment', $ticket),
                 'delete' => $user->can('delete', $ticket),
+                'view_activities' => $canViewActivities,
             ],
             'it_support_users' => $user->isAdmin()
                 ? User::where('role', User::ROLE_IT_SUPPORT)

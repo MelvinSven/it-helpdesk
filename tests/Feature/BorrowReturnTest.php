@@ -397,13 +397,16 @@ class BorrowReturnTest extends TestCase
         Storage::disk('public')->assertExists($existing);
     }
 
-    public function test_all_roles_can_read_the_item_list(): void
+    public function test_only_admin_can_read_the_item_list(): void
     {
-        $item = $this->item();
+        $this->item();
 
-        foreach ([User::ROLE_ADMIN, User::ROLE_STAFF, User::ROLE_IT_SUPPORT] as $role) {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)->get(route('items.index'))->assertOk();
+
+        foreach ([User::ROLE_STAFF, User::ROLE_IT_SUPPORT] as $role) {
             $user = User::factory()->create(['role' => $role]);
-            $this->actingAs($user)->get(route('items.index'))->assertOk();
+            $this->actingAs($user)->get(route('items.index'))->assertForbidden();
         }
     }
 }

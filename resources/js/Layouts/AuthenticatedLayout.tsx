@@ -142,12 +142,6 @@ export default function Authenticated({
             icon: TicketIcon,
         },
         {
-            name: 'Barang',
-            href: route('items.index'),
-            routeName: 'items.*',
-            icon: ItemIcon,
-        },
-        {
             name: 'Peminjaman',
             href: route('borrows.index'),
             routeName: 'borrows.*',
@@ -156,6 +150,13 @@ export default function Authenticated({
     ];
 
     if (user.role === 'admin') {
+        // Item master is admin-only; staff/IT reach items via the borrow form.
+        nav.push({
+            name: 'Barang',
+            href: route('items.index'),
+            routeName: 'items.*',
+            icon: ItemIcon,
+        });
         nav.push({
             name: 'Pengajuan Barang',
             href: route('admin.procurements.index'),

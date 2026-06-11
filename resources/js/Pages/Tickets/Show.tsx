@@ -25,6 +25,7 @@ interface Props {
         update_status: boolean;
         comment: boolean;
         delete: boolean;
+        view_activities: boolean;
     };
     it_support_users: Pick<User, 'id' | 'name' | 'user_id'>[];
 }
@@ -291,30 +292,32 @@ export default function Show({ ticket, can, it_support_users }: Props) {
                         </dl>
                     </section>
 
-                    <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                        <h2 className="mb-3 text-sm font-semibold text-gray-700">
-                            Riwayat
-                        </h2>
-                        {activities.length === 0 ? (
-                            <p className="text-xs text-gray-500">
-                                Belum ada aktivitas.
-                            </p>
-                        ) : (
-                            <ol className="space-y-3 border-l border-gray-200 pl-4">
-                                {activities.map((a) => (
-                                    <li key={a.id} className="relative">
-                                        <span className="absolute -left-[21px] top-1.5 inline-flex h-2 w-2 rounded-full bg-gray-300 ring-2 ring-white" />
-                                        <p className="text-xs leading-snug text-gray-700">
-                                            {activityMessage(a)}
-                                        </p>
-                                        <p className="mt-0.5 text-[10px] text-gray-400">
-                                            {formatDateTime(a.created_at)}
-                                        </p>
-                                    </li>
-                                ))}
-                            </ol>
-                        )}
-                    </section>
+                    {can.view_activities && (
+                        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                            <h2 className="mb-3 text-sm font-semibold text-gray-700">
+                                Riwayat
+                            </h2>
+                            {activities.length === 0 ? (
+                                <p className="text-xs text-gray-500">
+                                    Belum ada aktivitas.
+                                </p>
+                            ) : (
+                                <ol className="space-y-3 border-l border-gray-200 pl-4">
+                                    {activities.map((a) => (
+                                        <li key={a.id} className="relative">
+                                            <span className="absolute -left-[21px] top-1.5 inline-flex h-2 w-2 rounded-full bg-gray-300 ring-2 ring-white" />
+                                            <p className="text-xs leading-snug text-gray-700">
+                                                {activityMessage(a)}
+                                            </p>
+                                            <p className="mt-0.5 text-[10px] text-gray-400">
+                                                {formatDateTime(a.created_at)}
+                                            </p>
+                                        </li>
+                                    ))}
+                                </ol>
+                            )}
+                        </section>
+                    )}
 
                     {can.assign && (
                         <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">

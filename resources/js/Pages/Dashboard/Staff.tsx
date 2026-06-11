@@ -53,7 +53,7 @@ export default function StaffDashboard({ stats, recent_tickets, borrowed_items }
             <div className="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm">
                 <div className="flex items-center justify-between border-b border-gray-200 px-5 py-3">
                     <h2 className="text-sm font-semibold text-gray-700">
-                        Tiket Terbaru Saya
+                        Tiket Saya
                     </h2>
                     <Link
                         href={route('tickets.create')}

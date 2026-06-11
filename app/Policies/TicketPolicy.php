@@ -24,6 +24,13 @@ class TicketPolicy
         return $user->isAdmin() || $user->isStaff() || $user->isItSupport();
     }
 
+    public function export(User $user): bool
+    {
+        // Exporting the ticket list to Excel is for admin and IT Support only;
+        // staff can browse and view tickets but cannot bulk-export them.
+        return $user->isAdmin() || $user->isItSupport();
+    }
+
     public function assign(User $user, Ticket $ticket): bool
     {
         return $user->isAdmin();

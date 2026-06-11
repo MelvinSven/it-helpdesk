@@ -49,7 +49,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                         type="email"
                         name="email"
                         value={data.email}
-                        placeholder="admin@lixicon.local"
+                        placeholder=""
                         className="mt-1.5 block w-full"
                         autoComplete="email"
                         isFocused={true}

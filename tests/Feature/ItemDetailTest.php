@@ -79,21 +79,28 @@ class ItemDetailTest extends TestCase
             );
     }
 
-    public function test_non_admin_sees_logs_but_no_procurements(): void
+    public function test_non_admin_cannot_view_item_detail(): void
     {
-        $staff = User::factory()->create(['role' => User::ROLE_STAFF]);
         $item = $this->item();
-        $this->borrow($item);
-        $item->procurementRequests()->attach($this->procurement()->id);
 
-        $this->actingAs($staff)->get(route('items.show', $item))
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Items/Show')
-                ->has('borrows', 1)
-                ->has('procurements', 0)
-                ->has('availableProcurements', 0)
-                ->where('can.manage', false)
-            );
+        foreach ([User::ROLE_STAFF, User::ROLE_IT_SUPPORT] as $role) {
+            $user = User::factory()->create(['role' => $role]);
+
+            $this->actingAs($user)->get(route('items.show', $item))
+                ->assertForbidden();
+        }
+    }
+
+    public function test_non_admin_cannot_view_item_index(): void
+    {
+        $this->item();
+
+        foreach ([User::ROLE_STAFF, User::ROLE_IT_SUPPORT] as $role) {
+            $user = User::factory()->create(['role' => $role]);
+
+            $this->actingAs($user)->get(route('items.index'))
+                ->assertForbidden();
+        }
     }
 
     public function test_admin_can_attach_a_request_by_number(): void
