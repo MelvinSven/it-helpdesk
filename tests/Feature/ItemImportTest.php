@@ -66,6 +66,51 @@ class ItemImportTest extends TestCase
         ]);
     }
 
+    public function test_description_column_is_imported_when_present(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $file = $this->excel([...$this->defaultHeaders(), 'Deskripsi'], [
+            ['SN-010', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru', 'Core i7, RAM 16GB, Windows 11'],
+            ['SN-011', 'Mouse', 'Logitech', '', 'Mouse', 'Baik', ''],
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('items.import'), ['file' => $file])
+            ->assertRedirect(route('items.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('items', [
+            'serial_number' => 'SN-010',
+            'description' => 'Core i7, RAM 16GB, Windows 11',
+        ]);
+
+        // Empty cell stored as null.
+        $this->assertDatabaseHas('items', [
+            'serial_number' => 'SN-011',
+            'description' => null,
+        ]);
+    }
+
+    public function test_import_without_description_column_still_works(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $file = $this->excel($this->defaultHeaders(), [
+            ['SN-012', 'Keyboard', 'Logitech', '', 'Keyboard', 'Baru'],
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('items.import'), ['file' => $file])
+            ->assertRedirect(route('items.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('items', [
+            'serial_number' => 'SN-012',
+            'description' => null,
+        ]);
+    }
+
     public function test_rows_with_unknown_condition_are_skipped(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);

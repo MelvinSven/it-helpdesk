@@ -332,7 +332,12 @@ export default function Index({ items, filters, can }: Props) {
                             <code className="rounded bg-gray-100 px-1 text-xs">
                                 Kondisi
                             </code>
-                            . Kolom MAC Address bersifat opsional. Nilai Kondisi:{' '}
+                            ,{' '}
+                            <code className="rounded bg-gray-100 px-1 text-xs">
+                                Deskripsi
+                            </code>
+                            . Kolom MAC Address dan Deskripsi bersifat opsional.
+                            Nilai Kondisi:{' '}
                             <em>Baru</em>, <em>Baik</em>, <em>Rusak Ringan</em>,
                             atau <em>Rusak Berat</em>. Status awal semua barang:{' '}
                             <strong>Tersedia</strong>.

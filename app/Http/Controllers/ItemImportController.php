@@ -25,6 +25,7 @@ class ItemImportController extends Controller
         'mac_address' => ['mac address', 'mac_address', 'mac'],
         'type' => ['tipe', 'type'],
         'condition' => ['kondisi', 'condition'],
+        'description' => ['deskripsi', 'description'],
     ];
 
     private const REQUIRED = ['serial_number', 'item_name', 'brand_name', 'type', 'condition'];
@@ -33,21 +34,21 @@ class ItemImportController extends Controller
     {
         $this->authorize('create', Item::class);
 
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->fromArray(
-            ['Nomor Seri', 'Nama Barang', 'Merek', 'MAC Address', 'Tipe', 'Kondisi'],
+            ['Nomor Seri', 'Nama Barang', 'Merek', 'MAC Address', 'Tipe', 'Kondisi', 'Deskripsi'],
             null,
             'A1',
         );
         $sheet->fromArray(
-            ['SN-001', 'Laptop Dell', 'Dell', '00:1A:2B:3C:4D:5E', 'Laptop', 'Baru'],
+            ['SN-001', 'Laptop Dell', 'Dell', '00:1A:2B:3C:4D:5E', 'Laptop', 'Baru', 'Core i7, RAM 16GB, Windows 11'],
             null,
             'A2',
         );
 
-        $tmp = tempnam(sys_get_temp_dir(), 'item_template_') . '.xlsx';
+        $tmp = tempnam(sys_get_temp_dir(), 'item_template_').'.xlsx';
         IOFactory::createWriter($spreadsheet, 'Xlsx')->save($tmp);
 
         return response()->download($tmp, 'template_impor_barang.xlsx')->deleteFileAfterSend(true);
@@ -102,6 +103,7 @@ class ItemImportController extends Controller
             $brand = trim((string) ($row[$colMap['brand_name']] ?? ''));
             $type = trim((string) ($row[$colMap['type']] ?? ''));
             $mac = isset($colMap['mac_address']) ? trim((string) ($row[$colMap['mac_address']] ?? '')) : '';
+            $description = isset($colMap['description']) ? trim((string) ($row[$colMap['description']] ?? '')) : '';
 
             // "Rusak Ringan" / "rusak ringan" / "rusak_ringan" all normalise to
             // the stored value rusak_ringan.
@@ -144,6 +146,7 @@ class ItemImportController extends Controller
                 'mac_address' => $mac !== '' ? $mac : null,
                 'type' => $type,
                 'condition' => $condition,
+                'description' => $description !== '' ? $description : null,
                 'status' => Item::STATUS_AVAILABLE,
             ]);
 
