@@ -1,3 +1,4 @@
+import ImageLightbox from '@/Components/ImageLightbox';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { BorrowRecord, ItemCondition } from '@/types';
@@ -25,13 +26,11 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 function Photo({ path, alt }: { path: string | null; alt: string }) {
     if (!path) return <span className="text-gray-400">—</span>;
     return (
-        <a href={`/storage/${path}`} target="_blank" rel="noreferrer">
-            <img
-                src={`/storage/${path}`}
-                alt={alt}
-                className="h-28 w-28 rounded-md object-cover ring-1 ring-gray-200"
-            />
-        </a>
+        <ImageLightbox
+            src={`/storage/${path}`}
+            alt={alt}
+            thumbClassName="h-28 w-28 rounded-md ring-1 ring-gray-200"
+        />
     );
 }
 

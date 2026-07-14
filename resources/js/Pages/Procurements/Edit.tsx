@@ -1,3 +1,4 @@
+import ImageLightbox from '@/Components/ImageLightbox';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -164,17 +165,11 @@ export default function Edit({
                                         PDF · Lihat
                                     </a>
                                 ) : (
-                                    <a
-                                        href={`/storage/${procurement.form_file}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        <img
-                                            src={`/storage/${procurement.form_file}`}
-                                            alt="Form pengajuan"
-                                            className="h-16 w-16 rounded object-cover ring-1 ring-gray-200"
-                                        />
-                                    </a>
+                                    <ImageLightbox
+                                        src={`/storage/${procurement.form_file}`}
+                                        alt="Form pengajuan"
+                                        thumbClassName="h-16 w-16 shrink-0 rounded ring-1 ring-gray-200"
+                                    />
                                 )
                             ) : (
                                 <div className="flex h-16 w-16 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">

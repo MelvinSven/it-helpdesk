@@ -24,6 +24,7 @@ export default function Create() {
         mac_address: string;
         type: string;
         condition: string;
+        description: string;
         item_image: File | null;
     }>({
         serial_number: '',
@@ -32,6 +33,7 @@ export default function Create() {
         mac_address: '',
         type: '',
         condition: 'baik',
+        description: '',
         item_image: null,
     });
 
@@ -171,6 +173,27 @@ export default function Create() {
                                 message={errors.condition}
                             />
                         </div>
+                    </div>
+
+                    <div>
+                        <InputLabel
+                            htmlFor="description"
+                            value="Deskripsi (opsional)"
+                        />
+                        <textarea
+                            id="description"
+                            value={data.description}
+                            onChange={(e) =>
+                                setData('description', e.target.value)
+                            }
+                            rows={4}
+                            className="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500"
+                            placeholder="Spesifikasi, software terpasang, catatan lainnya..."
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.description}
+                        />
                     </div>
 
                     <div>

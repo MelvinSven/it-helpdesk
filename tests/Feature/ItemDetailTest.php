@@ -7,6 +7,8 @@ use App\Models\Item;
 use App\Models\ProcurementRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -189,6 +191,174 @@ class ItemDetailTest extends TestCase
 
         $this->assertFalse($itemA->procurementRequests()->whereKey($request->id)->exists());
         $this->assertTrue($itemB->procurementRequests()->whereKey($request->id)->exists());
+    }
+
+    public function test_first_uploaded_image_becomes_the_main_image_and_the_rest_the_gallery(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $item = $this->item();
+
+        $this->actingAs($admin)->post(route('items.images.store', $item), [
+            'images' => [
+                UploadedFile::fake()->image('main.jpg'),
+                UploadedFile::fake()->image('extra-1.jpg'),
+                UploadedFile::fake()->image('extra-2.jpg'),
+            ],
+        ])->assertRedirect();
+
+        $item->refresh();
+        $this->assertNotNull($item->item_image);
+        Storage::disk('public')->assertExists($item->item_image);
+
+        $this->assertCount(2, $item->images);
+        foreach ($item->images as $image) {
+            Storage::disk('public')->assertExists($image->image_path);
+        }
+    }
+
+    public function test_uploads_go_to_the_gallery_when_a_main_image_exists(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $item = $this->item();
+
+        $main = UploadedFile::fake()->image('main.jpg')->store('items', 'public');
+        $item->update(['item_image' => $main]);
+
+        $this->actingAs($admin)->post(route('items.images.store', $item), [
+            'images' => [UploadedFile::fake()->image('extra.jpg')],
+        ])->assertRedirect();
+
+        $item->refresh();
+        $this->assertEquals($main, $item->item_image);
+        $this->assertCount(1, $item->images);
+    }
+
+    public function test_image_upload_rejects_non_image_files(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $item = $this->item();
+
+        $this->actingAs($admin)->post(route('items.images.store', $item), [
+            'images' => [UploadedFile::fake()->create('doc.pdf', 100, 'application/pdf')],
+        ])->assertSessionHasErrors('images.0');
+
+        $this->assertNull($item->fresh()->item_image);
+        $this->assertCount(0, $item->images);
+    }
+
+    public function test_non_admin_cannot_upload_item_images(): void
+    {
+        Storage::fake('public');
+        $item = $this->item();
+
+        foreach ([User::ROLE_STAFF, User::ROLE_IT_SUPPORT] as $role) {
+            $user = User::factory()->create(['role' => $role]);
+
+            $this->actingAs($user)->post(route('items.images.store', $item), [
+                'images' => [UploadedFile::fake()->image('laptop.jpg')],
+            ])->assertForbidden();
+        }
+
+        $this->assertNull($item->fresh()->item_image);
+        $this->assertCount(0, $item->images);
+    }
+
+    public function test_admin_can_delete_a_gallery_image(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $item = $this->item();
+
+        $path = UploadedFile::fake()->image('extra.jpg')->store('items', 'public');
+        $image = $item->images()->create(['image_path' => $path]);
+
+        $this->actingAs($admin)->delete(route('items.images.destroy', [$item, $image]))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('item_images', ['id' => $image->id]);
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_cannot_delete_a_gallery_image_of_another_item(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $itemA = $this->item('SN-A', 'Laptop');
+        $itemB = $this->item('SN-B', 'Monitor');
+
+        $image = $itemB->images()->create([
+            'image_path' => UploadedFile::fake()->image('extra.jpg')->store('items', 'public'),
+        ]);
+
+        $this->actingAs($admin)->delete(route('items.images.destroy', [$itemA, $image]))
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('item_images', ['id' => $image->id]);
+    }
+
+    public function test_non_admin_cannot_delete_a_gallery_image(): void
+    {
+        Storage::fake('public');
+        $staff = User::factory()->create(['role' => User::ROLE_STAFF]);
+        $item = $this->item();
+
+        $image = $item->images()->create([
+            'image_path' => UploadedFile::fake()->image('extra.jpg')->store('items', 'public'),
+        ]);
+
+        $this->actingAs($staff)->delete(route('items.images.destroy', [$item, $image]))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('item_images', ['id' => $image->id]);
+    }
+
+    public function test_item_can_be_created_and_updated_with_a_description(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->post(route('items.store'), [
+            'serial_number' => 'SN-DESC-001',
+            'item_name' => 'Laptop',
+            'brand_name' => 'Acme',
+            'mac_address' => null,
+            'type' => 'Laptop',
+            'condition' => Item::CONDITION_GOOD,
+            'description' => "Core i7, RAM 16GB\nWindows 11, Office 2024",
+        ])->assertRedirect(route('items.index'));
+
+        $item = Item::where('serial_number', 'SN-DESC-001')->firstOrFail();
+        $this->assertEquals("Core i7, RAM 16GB\nWindows 11, Office 2024", $item->description);
+
+        $this->actingAs($admin)->patch(route('items.update', $item), [
+            'serial_number' => $item->serial_number,
+            'item_name' => $item->item_name,
+            'brand_name' => $item->brand_name,
+            'mac_address' => null,
+            'type' => $item->type,
+            'condition' => $item->condition,
+            'description' => 'RAM upgrade ke 32GB',
+        ])->assertRedirect(route('items.index'));
+
+        $this->assertEquals('RAM upgrade ke 32GB', $item->fresh()->description);
+    }
+
+    public function test_description_is_optional(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->post(route('items.store'), [
+            'serial_number' => 'SN-DESC-002',
+            'item_name' => 'Mouse',
+            'brand_name' => 'Acme',
+            'mac_address' => null,
+            'type' => 'Mouse',
+            'condition' => Item::CONDITION_GOOD,
+        ])->assertRedirect(route('items.index'));
+
+        $this->assertNull(Item::where('serial_number', 'SN-DESC-002')->firstOrFail()->description);
     }
 
     public function test_cannot_detach_a_request_not_linked_to_this_item(): void

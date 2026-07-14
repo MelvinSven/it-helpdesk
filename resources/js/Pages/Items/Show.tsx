@@ -1,10 +1,12 @@
+import ImageLightbox from '@/Components/ImageLightbox';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { ChangeEventHandler, FormEventHandler, useRef, useState } from 'react';
 import {
     BorrowRecord,
     Item,
     ItemCondition,
+    ItemImage,
     ProcurementRequest,
     ProcurementRequestOption,
 } from '@/types';
@@ -47,6 +49,25 @@ function BorrowStatusPill({ status }: { status: BorrowRecord['status'] }) {
     );
 }
 
+function PlusIcon({ className }: { className: string }) {
+    return (
+        <svg
+            className={className}
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            aria-hidden="true"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+            />
+        </svg>
+    );
+}
+
 function Field({ label, value }: { label: string; value: string }) {
     return (
         <div>
@@ -73,6 +94,50 @@ export default function Show({
             preserveScroll: true,
             onSuccess: () => reset('procurement_request_id'),
         });
+    };
+
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    const [uploadingImages, setUploadingImages] = useState(false);
+    const [imageError, setImageError] = useState<string | null>(null);
+    const gallery = item.images ?? [];
+
+    const uploadImages: ChangeEventHandler<HTMLInputElement> = (e) => {
+        const files = Array.from(e.target.files ?? []);
+        e.target.value = ''; // allow re-selecting the same files after an error
+        if (files.length === 0) return;
+
+        // PHP's max_file_uploads (default 20) silently drops extra files,
+        // so reject oversized batches before they reach the server.
+        if (files.length > 20) {
+            setImageError('Maksimal 20 gambar per unggahan.');
+            return;
+        }
+
+        setImageError(null);
+        router.post(
+            route('items.images.store', item.id),
+            { images: files },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onStart: () => setUploadingImages(true),
+                onFinish: () => setUploadingImages(false),
+                onError: (errors) =>
+                    setImageError(
+                        Object.values(errors).join(' ') ||
+                            'Gagal mengunggah gambar.',
+                    ),
+            },
+        );
+    };
+
+    const removeImage = (image: ItemImage) => {
+        if (confirm('Hapus gambar ini dari galeri?')) {
+            router.delete(
+                route('items.images.destroy', [item.id, image.id]),
+                { preserveScroll: true },
+            );
+        }
     };
 
     const detach = (p: ProcurementRequest) => {
@@ -114,17 +179,109 @@ export default function Show({
             {/* Item info */}
             <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                 <div className="flex flex-col gap-6 sm:flex-row">
-                    {item.item_image ? (
-                        <img
-                            src={`/storage/${item.item_image}`}
-                            alt={item.item_name}
-                            className="h-32 w-32 shrink-0 rounded-lg object-cover ring-1 ring-gray-200"
-                        />
-                    ) : (
-                        <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-sm text-gray-400">
-                            Tanpa gambar
-                        </div>
-                    )}
+                    <div className="w-48 shrink-0">
+                        {can.manage && (
+                            <input
+                                ref={imageInputRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={uploadImages}
+                            />
+                        )}
+
+                        {/* Main image */}
+                        {item.item_image ? (
+                            <ImageLightbox
+                                src={`/storage/${item.item_image}`}
+                                alt={item.item_name}
+                                thumbClassName="h-48 w-48 rounded-lg ring-1 ring-gray-200"
+                            />
+                        ) : can.manage ? (
+                            <button
+                                type="button"
+                                onClick={() => imageInputRef.current?.click()}
+                                disabled={uploadingImages}
+                                className="flex h-48 w-48 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-gray-400 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-600 disabled:cursor-wait disabled:opacity-50"
+                            >
+                                <PlusIcon className="h-8 w-8" />
+                                <span className="text-xs font-medium">
+                                    {uploadingImages
+                                        ? 'Mengunggah…'
+                                        : 'Tambah gambar'}
+                                </span>
+                            </button>
+                        ) : (
+                            <div className="flex h-48 w-48 items-center justify-center rounded-lg bg-gray-100 text-sm text-gray-400">
+                                Tanpa gambar
+                            </div>
+                        )}
+
+                        {/* Gallery thumbnails under the main image */}
+                        {(gallery.length > 0 ||
+                            (can.manage && item.item_image)) && (
+                            <div className="mt-2 grid grid-cols-3 gap-2">
+                                {gallery.map((img) => (
+                                    <div key={img.id} className="group relative">
+                                        <ImageLightbox
+                                            src={`/storage/${img.image_path}`}
+                                            alt={item.item_name}
+                                            thumbClassName="aspect-square w-full rounded-md ring-1 ring-gray-200"
+                                        />
+                                        {can.manage && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(img)}
+                                                aria-label="Hapus gambar"
+                                                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-white opacity-0 shadow transition-opacity hover:bg-red-700 focus:opacity-100 group-hover:opacity-100"
+                                            >
+                                                <svg
+                                                    className="h-3 w-3"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                    stroke="currentColor"
+                                                    aria-hidden="true"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M6 18L18 6M6 6l12 12"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                                {can.manage && item.item_image && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            imageInputRef.current?.click()
+                                        }
+                                        disabled={uploadingImages}
+                                        aria-label="Tambah gambar"
+                                        className="flex aspect-square w-full items-center justify-center rounded-md border-2 border-dashed border-gray-300 bg-gray-50 text-gray-400 hover:border-brand-400 hover:bg-brand-50 hover:text-brand-600 disabled:cursor-wait disabled:opacity-50"
+                                    >
+                                        {uploadingImages ? (
+                                            <span className="text-[10px] font-medium">
+                                                …
+                                            </span>
+                                        ) : (
+                                            <PlusIcon className="h-5 w-5" />
+                                        )}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {imageError && (
+                            <p className="mt-1 text-xs text-red-600">
+                                {imageError}
+                            </p>
+                        )}
+                    </div>
                     <div className="flex-1">
                         <div className="mb-4 flex items-center gap-3">
                             <h2 className="text-lg font-semibold text-gray-900">
@@ -159,6 +316,22 @@ export default function Show({
                     </div>
                 </div>
             </div>
+
+            {/* Description */}
+            <section className="mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                <h2 className="mb-2 text-sm font-semibold text-gray-700">
+                    Deskripsi
+                </h2>
+                {item.description ? (
+                    <p className="whitespace-pre-wrap text-sm text-gray-800">
+                        {item.description}
+                    </p>
+                ) : (
+                    <p className="text-sm text-gray-400">
+                        Belum ada deskripsi.
+                    </p>
+                )}
+            </section>
 
             {/* Borrowing logs */}
             <section className="mt-6">

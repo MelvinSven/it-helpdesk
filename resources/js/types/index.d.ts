@@ -78,8 +78,18 @@ export interface Item {
     mac_address: string | null;
     type: string;
     condition: ItemCondition;
+    description: string | null;
     status: ItemStatus;
     item_image: string | null;
+    images?: ItemImage[];
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ItemImage {
+    id: number;
+    item_id: number;
+    image_path: string;
     created_at: string;
     updated_at: string;
 }

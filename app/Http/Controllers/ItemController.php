@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Models\ItemImage;
 use App\Models\ProcurementRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -73,7 +74,7 @@ class ItemController extends Controller
             : [];
 
         return Inertia::render('Items/Show', [
-            'item' => $item,
+            'item' => $item->load('images'),
             'borrows' => $borrows,
             'procurements' => $procurements,
             'availableProcurements' => $availableProcurements,
@@ -101,6 +102,7 @@ class ItemController extends Controller
             'mac_address' => ['nullable', 'string', 'max:100'],
             'type' => ['required', 'string', 'max:100'],
             'condition' => ['required', Rule::in(Item::CONDITIONS)],
+            'description' => ['nullable', 'string', 'max:5000'],
             'item_image' => ['nullable', 'image', 'max:5120'],
         ]);
 
@@ -136,6 +138,7 @@ class ItemController extends Controller
             'mac_address' => ['nullable', 'string', 'max:100'],
             'type' => ['required', 'string', 'max:100'],
             'condition' => ['required', Rule::in(Item::CONDITIONS)],
+            'description' => ['nullable', 'string', 'max:5000'],
             'item_image' => ['nullable', 'image', 'max:5120'],
         ]);
 
@@ -152,6 +155,44 @@ class ItemController extends Controller
         $item->update($validated);
 
         return redirect()->route('items.index')->with('success', 'Barang berhasil diperbarui.');
+    }
+
+    public function storeImages(Request $request, Item $item): RedirectResponse
+    {
+        $this->authorize('update', $item);
+
+        $request->validate([
+            'images' => ['required', 'array', 'min:1', 'max:20'],
+            'images.*' => ['image', 'max:5120'],
+        ]);
+
+        $files = $request->file('images');
+
+        // The first upload becomes the main image when the item has none yet;
+        // everything else lands in the gallery.
+        if (! $item->item_image) {
+            $item->update(['item_image' => array_shift($files)->store('items', 'public')]);
+        }
+
+        $item->images()->createMany(array_map(
+            fn ($file) => ['image_path' => $file->store('items', 'public')],
+            $files,
+        ));
+
+        return back()->with('success', 'Gambar barang berhasil diunggah.');
+    }
+
+    public function destroyImage(Item $item, ItemImage $image): RedirectResponse
+    {
+        $this->authorize('update', $item);
+
+        // Guard against deleting an image that belongs to another item.
+        abort_unless($image->item_id === $item->id, 404);
+
+        Storage::disk('public')->delete($image->image_path);
+        $image->delete();
+
+        return back()->with('success', 'Gambar barang berhasil dihapus.');
     }
 
     public function attachProcurement(Request $request, Item $item): RedirectResponse
@@ -196,6 +237,11 @@ class ItemController extends Controller
 
         if ($item->item_image) {
             Storage::disk('public')->delete($item->item_image);
+        }
+
+        // Gallery rows cascade with the item, but their files don't.
+        foreach ($item->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
         }
 
         $item->delete();

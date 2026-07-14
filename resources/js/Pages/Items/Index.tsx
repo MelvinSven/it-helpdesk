@@ -1,3 +1,4 @@
+import ImageLightbox from '@/Components/ImageLightbox';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Item, ItemCondition, Paginated, PageProps } from '@/types';
@@ -202,10 +203,10 @@ export default function Index({ items, filters, can }: Props) {
                                 <tr key={item.id} className="hover:bg-gray-50">
                                     <td className="px-4 py-3">
                                         {item.item_image ? (
-                                            <img
+                                            <ImageLightbox
                                                 src={`/storage/${item.item_image}`}
                                                 alt={item.item_name}
-                                                className="h-10 w-10 rounded object-cover"
+                                                thumbClassName="h-10 w-10 rounded"
                                             />
                                         ) : (
                                             <div className="flex h-10 w-10 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">

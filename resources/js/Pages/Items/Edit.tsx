@@ -1,3 +1,4 @@
+import ImageLightbox from '@/Components/ImageLightbox';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -16,6 +17,7 @@ export default function Edit({ item }: { item: Item }) {
         mac_address: string;
         type: string;
         condition: Item['condition'];
+        description: string;
         item_image: File | null;
     }>({
         _method: 'patch',
@@ -25,6 +27,7 @@ export default function Edit({ item }: { item: Item }) {
         mac_address: item.mac_address ?? '',
         type: item.type,
         condition: item.condition,
+        description: item.description ?? '',
         item_image: null,
     });
 
@@ -167,13 +170,34 @@ export default function Edit({ item }: { item: Item }) {
                     </div>
 
                     <div>
+                        <InputLabel
+                            htmlFor="description"
+                            value="Deskripsi (opsional)"
+                        />
+                        <textarea
+                            id="description"
+                            value={data.description}
+                            onChange={(e) =>
+                                setData('description', e.target.value)
+                            }
+                            rows={4}
+                            className="mt-1 block w-full rounded-md border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500"
+                            placeholder="Spesifikasi, software terpasang, catatan lainnya..."
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.description}
+                        />
+                    </div>
+
+                    <div>
                         <InputLabel htmlFor="item_image" value="Gambar Barang" />
                         <div className="mt-1 flex items-center gap-4">
                             {item.item_image ? (
-                                <img
+                                <ImageLightbox
                                     src={`/storage/${item.item_image}`}
                                     alt={item.item_name}
-                                    className="h-16 w-16 rounded object-cover"
+                                    thumbClassName="h-16 w-16 shrink-0 rounded"
                                 />
                             ) : (
                                 <div className="flex h-16 w-16 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">

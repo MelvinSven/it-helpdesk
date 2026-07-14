@@ -1,3 +1,4 @@
+import ImageLightbox from '@/Components/ImageLightbox';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { ProcurementRequest } from '@/types';
@@ -42,13 +43,11 @@ function FormFile({ path }: { path: string | null }) {
     }
 
     return (
-        <a href={url} target="_blank" rel="noreferrer">
-            <img
-                src={url}
-                alt="Form pengajuan"
-                className="h-40 w-40 rounded-md object-cover ring-1 ring-gray-200"
-            />
-        </a>
+        <ImageLightbox
+            src={url}
+            alt="Form pengajuan"
+            thumbClassName="h-40 w-40 rounded-md ring-1 ring-gray-200"
+        />
     );
 }
 

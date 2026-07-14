@@ -1,3 +1,4 @@
+import ImageLightbox from '@/Components/ImageLightbox';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { BorrowRecord, ItemCondition, Paginated } from '@/types';
@@ -136,17 +137,11 @@ export default function Index({ borrows, filters, can }: Props) {
                                     </td>
                                     <td className="px-4 py-3">
                                         {b.borrow_image ? (
-                                            <a
-                                                href={`/storage/${b.borrow_image}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                <img
-                                                    src={`/storage/${b.borrow_image}`}
-                                                    alt="Foto peminjaman"
-                                                    className="h-10 w-10 rounded object-cover"
-                                                />
-                                            </a>
+                                            <ImageLightbox
+                                                src={`/storage/${b.borrow_image}`}
+                                                alt="Foto peminjaman"
+                                                thumbClassName="h-10 w-10 rounded"
+                                            />
                                         ) : (
                                             <span className="text-gray-400">
                                                 —

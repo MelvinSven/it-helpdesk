@@ -46,6 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
     Route::get('/items/{item}/edit', [ItemController::class, 'edit'])->name('items.edit');
     Route::patch('/items/{item}', [ItemController::class, 'update'])->name('items.update');
+    Route::post('/items/{item}/images', [ItemController::class, 'storeImages'])->name('items.images.store');
+    Route::delete('/items/{item}/images/{image}', [ItemController::class, 'destroyImage'])->name('items.images.destroy');
     Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
     // Link/unlink a procurement request to an item from the item detail page.

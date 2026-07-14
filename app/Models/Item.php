@@ -42,6 +42,7 @@ class Item extends Model
         'mac_address',
         'type',
         'condition',
+        'description',
         'status',
         'item_image',
     ];
@@ -49,6 +50,11 @@ class Item extends Model
     public function borrowRecords(): HasMany
     {
         return $this->hasMany(BorrowRecord::class);
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(ItemImage::class);
     }
 
     public function procurementRequests(): BelongsToMany
