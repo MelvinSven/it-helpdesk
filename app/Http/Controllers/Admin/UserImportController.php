@@ -79,7 +79,7 @@ class UserImportController extends Controller
 
         $imported = 0;
         $skipped  = [];
-        $defaultPassword = Hash::make('password');
+        $defaultPassword = Hash::make('lixicon123');
 
         foreach (array_slice($rows, 1) as $lineNumber => $row) {
             $userId     = trim((string) ($row[$colMap['id pengguna']] ?? ''));

@@ -280,7 +280,7 @@ export default function Index({ users, filters }: Props) {
                             <code className="rounded bg-gray-100 px-1 text-xs">Departemen</code>.
                             Kolom Email dan Departemen bersifat opsional.
                             Nilai Peran: <em>Admin</em>, <em>Staf</em>, atau <em>Dukungan TI</em>.
-                            Kata sandi awal semua pengguna: <strong>password</strong>.
+                            Kata sandi awal semua pengguna: <strong>lixicon123</strong>.
                         </p>
 
                         <div className="mb-4">
