@@ -21,7 +21,7 @@ class UserController extends Controller
             $query->where('role', $role);
         }
 
-        if ($request->has('is_active')) {
+        if ($request->filled('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
         }
 

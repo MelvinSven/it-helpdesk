@@ -36,7 +36,10 @@ export default function Index({ users, filters }: Props) {
     } = useForm<{ file: File | null }>({ file: null });
 
     const apply = (next = form) => {
-        router.get(route('admin.users.index'), next, {
+        const params = Object.fromEntries(
+            Object.entries(next).filter(([, value]) => value !== ''),
+        );
+        router.get(route('admin.users.index'), params, {
             preserveState: true,
             replace: true,
         });
