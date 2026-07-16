@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Listeners;
+
+use App\Mail\SupportNotificationCopy;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Support\Facades\Mail;
+
+class ForwardNotificationToSupport implements ShouldQueue
+{
+    public function handle(NotificationSent $event): void
+    {
+        // Only forward once per notification: the database channel is the
+        // canonical one for every in-app notification type.
+        if ($event->channel !== 'database') {
+            return;
+        }
+
+        $supportEmail = config('services.support.notification_email');
+        if (! $supportEmail) {
+            return;
+        }
+
+        $data = method_exists($event->notification, 'toArray')
+            ? $event->notification->toArray($event->notifiable)
+            : [];
+
+        $recipientName = $event->notifiable->name ?? (string) $event->notifiable->getKey();
+
+        $lines = array_filter([
+            $data['message'] ?? class_basename($event->notification),
+            '',
+            isset($data['ticket_code']) ? "Tiket: {$data['ticket_code']}" : null,
+            isset($data['ticket_title']) ? "Judul: {$data['ticket_title']}" : null,
+            isset($data['actor_name']) && $data['actor_name'] ? "Oleh: {$data['actor_name']}" : null,
+            "Penerima: {$recipientName}",
+        ], fn ($line) => $line !== null);
+
+        $subject = sprintf(
+            '[%s] %s',
+            config('app.name'),
+            $data['message'] ?? class_basename($event->notification),
+        );
+
+        Mail::to($supportEmail)->send(
+            new SupportNotificationCopy($subject, implode("\n", $lines)),
+        );
+    }
+}
