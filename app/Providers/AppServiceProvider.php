@@ -2,10 +2,7 @@
 
 namespace App\Providers;
 
-use App\Listeners\ForwardNotificationToSupport;
 use App\Mail\Transport\GmailApiTransport;
-use Illuminate\Notifications\Events\NotificationSent;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -27,8 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        Event::listen(NotificationSent::class, ForwardNotificationToSupport::class);
-
+        // ForwardNotificationToSupport is registered via event auto-discovery.
         Mail::extend('gmail', function (): GmailApiTransport {
             return new GmailApiTransport(
                 config('services.gmail.client_id'),

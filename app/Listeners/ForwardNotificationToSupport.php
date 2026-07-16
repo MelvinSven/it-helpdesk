@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Mail\SupportNotificationCopy;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 class ForwardNotificationToSupport implements ShouldQueue
@@ -25,6 +26,15 @@ class ForwardNotificationToSupport implements ShouldQueue
         $data = method_exists($event->notification, 'toArray')
             ? $event->notification->toArray($event->notifiable)
             : [];
+
+        // One business event may notify several users (e.g. a comment notifies
+        // requestor + assignee). Forward the support copy only once: the payload
+        // is recipient-independent, so identical payloads within the window are
+        // the same event. Cache::add is atomic, safe across parallel workers.
+        $fingerprint = 'support-forward:'.md5(get_class($event->notification).'|'.json_encode($data));
+        if (! Cache::add($fingerprint, true, now()->addSeconds(30))) {
+            return;
+        }
 
         $recipientName = $event->notifiable->name ?? (string) $event->notifiable->getKey();
 
