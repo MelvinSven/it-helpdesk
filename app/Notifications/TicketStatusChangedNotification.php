@@ -4,11 +4,14 @@ namespace App\Notifications;
 
 use App\Models\Ticket;
 use App\Models\User;
+use App\Notifications\Concerns\DeliversByMail;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class TicketStatusChangedNotification extends Notification
+class TicketStatusChangedNotification extends Notification implements ShouldQueue
 {
+    use DeliversByMail;
     use Queueable;
 
     public function __construct(
@@ -16,13 +19,7 @@ class TicketStatusChangedNotification extends Notification
         public string $oldStatus,
         public string $newStatus,
         public ?User $actor = null
-    ) {
-    }
-
-    public function via(object $notifiable): array
-    {
-        return ['database'];
-    }
+    ) {}
 
     public function toArray(object $notifiable): array
     {
