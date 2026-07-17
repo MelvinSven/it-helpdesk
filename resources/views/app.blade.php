@@ -7,6 +7,9 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+
         {{-- Apply saved theme before paint to avoid dark-mode flash --}}
         <script>
             (function () {
