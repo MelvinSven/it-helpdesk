@@ -74,8 +74,10 @@ class TicketController extends Controller
 
         TicketActivity::record($ticket, $request->user(), TicketActivity::ACTION_CREATED);
 
-        $admins = User::where('role', User::ROLE_ADMIN)->where('is_active', true)->get();
-        Notification::send($admins, new NewUnassignedTicketNotification($ticket));
+        $recipients = User::whereIn('role', [User::ROLE_ADMIN, User::ROLE_IT_SUPPORT])
+            ->where('is_active', true)
+            ->get();
+        Notification::send($recipients, new NewUnassignedTicketNotification($ticket));
 
         return redirect()
             ->route('tickets.show', $ticket)

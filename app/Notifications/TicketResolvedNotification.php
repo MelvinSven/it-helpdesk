@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TicketAssignedNotification extends Notification implements ShouldQueue
+class TicketResolvedNotification extends Notification implements ShouldQueue
 {
     use DeliversByMail;
     use Queueable;
@@ -20,7 +20,7 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type' => 'ticket_assigned',
+            'type' => 'ticket_resolved',
             'ticket_id' => $this->ticket->id,
             'ticket_code' => $this->ticket->ticket_code,
             'ticket_title' => $this->ticket->title,
@@ -29,7 +29,7 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
             'requestor_name' => $this->ticket->requestor?->name,
             'requestor_email' => $this->ticket->requestor?->email,
             'actor_name' => $this->actor?->name,
-            'message' => "Tiket {$this->ticket->ticket_code} ditugaskan kepada Anda.",
+            'message' => "Tiket {$this->ticket->ticket_code} telah ditandai selesai. Mohon konfirmasi penyelesaian.",
         ];
     }
 
@@ -40,7 +40,9 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('['.config('app.name').'] '.$data['message'])
             ->view('mail.new-ticket', [
-                'leadLine' => 'Tiket ditugaskan kepada Anda. Pelapor:',
+                'leadLine' => 'Tiket Anda telah selesai. Mohon konfirmasi:',
+                'noticeLine' => 'Jika masalah sudah teratasi, tidak diperlukan tindakan. Jika belum, buka kembali tiket dari halaman berikut.',
+                'ctaLabel' => 'Konfirmasi / Buka Kembali',
                 'ticketCode' => $data['ticket_code'],
                 'ticketTitle' => $data['ticket_title'],
                 'ticketDate' => $data['ticket_date'],

@@ -6,6 +6,7 @@ use App\Models\Ticket;
 use App\Models\User;
 use App\Notifications\NewUnassignedTicketNotification;
 use App\Notifications\TicketAssignedNotification;
+use App\Notifications\TicketResolvedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -55,6 +56,28 @@ class NotificationMailTest extends TestCase
         $mail = (new TicketAssignedNotification($ticket, $requestor))->toMail($assignee);
 
         $this->assertStringContainsString('TKT-20260715-0002', $mail->subject);
-        $this->assertSame(route('tickets.show', $ticket->id), $mail->actionUrl);
+
+        $html = (string) $mail->render();
+        $this->assertStringContainsString('TKT-20260715-0002', $html);
+        $this->assertStringContainsString(route('tickets.show', $ticket->id), $html);
+    }
+
+    public function test_resolved_notification_uses_mail_channel_and_confirmation_content(): void
+    {
+        $requestor = User::factory()->create();
+        $actor = User::factory()->create(['role' => User::ROLE_IT_SUPPORT]);
+        $ticket = $this->makeTicket($requestor);
+
+        $notification = new TicketResolvedNotification($ticket, $actor);
+
+        $this->assertEqualsCanonicalizing(['database', 'mail'], $notification->via($requestor));
+
+        $mail = $notification->toMail($requestor);
+        $html = (string) $mail->render();
+
+        $this->assertStringContainsString('TKT-20260715-0002', $mail->subject);
+        $this->assertStringContainsString('Mohon konfirmasi', $html);
+        $this->assertStringContainsString('Konfirmasi / Buka Kembali', $html);
+        $this->assertStringContainsString(route('tickets.show', $ticket->id), $html);
     }
 }

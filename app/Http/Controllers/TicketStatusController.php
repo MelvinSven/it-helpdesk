@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Ticket;
 use App\Models\TicketActivity;
+use App\Notifications\TicketResolvedNotification;
 use App\Notifications\TicketStatusChangedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,9 +41,11 @@ class TicketStatusController extends Controller
             );
 
             if ($ticket->requestor && $ticket->requestor_id !== $request->user()->id) {
-                $ticket->requestor->notify(
-                    new TicketStatusChangedNotification($ticket, $oldStatus, $ticket->status, $request->user())
-                );
+                $notification = $ticket->status === Ticket::STATUS_RESOLVED
+                    ? new TicketResolvedNotification($ticket, $request->user())
+                    : new TicketStatusChangedNotification($ticket, $oldStatus, $ticket->status, $request->user());
+
+                $ticket->requestor->notify($notification);
             }
         }
 
