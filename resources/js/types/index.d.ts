@@ -7,6 +7,7 @@ export interface User {
     email: string | null;
     role: UserRole;
     department: string | null;
+    proyek: string | null;
     is_active: boolean;
 }
 
@@ -144,7 +145,10 @@ export interface AppNotification {
         ticket_code?: string;
         ticket_title?: string;
         actor_name?: string;
-        message: string;
+        old_status_label?: string;
+        new_status_label?: string;
+        /** Absent on status-change notifications; compose from the labels instead. */
+        message?: string;
     };
     read_at: string | null;
     created_at: string;

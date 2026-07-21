@@ -4,6 +4,23 @@ import { AppNotification } from '@/types';
 
 const POLL_MS = 30000;
 
+// Status-change notifications carry the labels instead of a ready-made message,
+// so the text is composed here. Older stored payloads still have `message`.
+const notificationText = (n: AppNotification): string => {
+    if (n.data.message) return n.data.message;
+
+    if (n.data.type === 'ticket_status_changed' && n.data.new_status_label) {
+        return `Status tiket ${n.data.ticket_code ?? ''} berubah menjadi ${n.data.new_status_label}.`.replace(
+            '  ',
+            ' ',
+        );
+    }
+
+    return n.data.ticket_code
+        ? `Pembaruan tiket ${n.data.ticket_code}.`
+        : 'Pembaruan tiket.';
+};
+
 export default function NotificationBell() {
     const [open, setOpen] = useState(false);
     const [unread, setUnread] = useState(0);
@@ -158,7 +175,7 @@ export default function NotificationBell() {
                                         className={`flex w-full flex-col items-start gap-1 px-4 py-3 text-left text-sm hover:bg-gray-50 ${!n.read_at ? 'bg-brand-50/40' : ''}`}
                                     >
                                         <span className="font-medium text-gray-900">
-                                            {n.data.message}
+                                            {notificationText(n)}
                                         </span>
                                         <span className="text-xs text-gray-500">
                                             {formatTime(n.created_at)}

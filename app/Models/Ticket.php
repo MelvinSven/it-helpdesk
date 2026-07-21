@@ -13,12 +13,24 @@ class Ticket extends Model
     use HasFactory;
 
     public const STATUS_NEW = 'new';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_RESOLVED = 'resolved';
 
+    /** Indonesian labels for the ticket statuses, used in UI copy and emails. */
+    public const STATUS_LABELS = [
+        self::STATUS_NEW => 'Baru',
+        self::STATUS_IN_PROGRESS => 'Dikerjakan',
+        self::STATUS_RESOLVED => 'Selesai',
+    ];
+
     public const PRIORITY_LOW = 'low';
+
     public const PRIORITY_MEDIUM = 'medium';
+
     public const PRIORITY_HIGH = 'high';
+
     public const PRIORITY_URGENT = 'urgent';
 
     protected $fillable = [
@@ -41,6 +53,11 @@ class Ticket extends Model
             'resolved_at' => 'datetime',
             'closed_at' => 'datetime',
         ];
+    }
+
+    public function statusLabel(): string
+    {
+        return self::STATUS_LABELS[$this->status] ?? $this->status;
     }
 
     public function requestor(): BelongsTo

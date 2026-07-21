@@ -13,6 +13,7 @@ export default function Create() {
         email: '',
         role: 'staff',
         department: '',
+        proyek: '',
         password: '',
     });
 
@@ -120,6 +121,17 @@ export default function Create() {
                                 message={errors.department}
                             />
                         </div>
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="proyek" value="Proyek" />
+                        <TextInput
+                            id="proyek"
+                            value={data.proyek}
+                            onChange={(e) => setData('proyek', e.target.value)}
+                            className="mt-1 block w-full"
+                        />
+                        <InputError className="mt-2" message={errors.proyek} />
                     </div>
 
                     <div>

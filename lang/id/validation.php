@@ -134,6 +134,7 @@ return [
         'password' => 'kata sandi',
         'role' => 'peran',
         'department' => 'departemen',
+        'proyek' => 'proyek',
         'is_active' => 'status akun',
         'assignee_id' => 'penangan',
         'current_password' => 'kata sandi saat ini',

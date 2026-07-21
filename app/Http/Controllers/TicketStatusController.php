@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Ticket;
 use App\Models\TicketActivity;
+use App\Models\User;
 use App\Notifications\TicketResolvedNotification;
 use App\Notifications\TicketStatusChangedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class TicketStatusController extends Controller
 {
@@ -47,6 +49,18 @@ class TicketStatusController extends Controller
 
                 $ticket->requestor->notify($notification);
             }
+
+            // Admins keep an eye on every status change, except the one they made
+            // themselves and the requestor who was already notified above.
+            $admins = User::where('role', User::ROLE_ADMIN)
+                ->where('is_active', true)
+                ->whereNotIn('id', array_filter([$request->user()->id, $ticket->requestor_id]))
+                ->get();
+
+            Notification::send(
+                $admins,
+                new TicketStatusChangedNotification($ticket, $oldStatus, $ticket->status, $request->user())
+            );
         }
 
         return back()->with('success', 'Status tiket diperbarui.');

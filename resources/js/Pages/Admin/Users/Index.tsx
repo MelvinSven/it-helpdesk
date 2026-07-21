@@ -172,7 +172,8 @@ export default function Index({ users, filters }: Props) {
                             <th className="px-4 py-3">Nama</th>
                             <th className="px-4 py-3">Email</th>
                             <th className="px-4 py-3">Peran</th>
-                            <th className="px-4 py-3">Departemen</th>
+                            <th className="px-4 py-3">Jabatan</th>
+                            <th className="px-4 py-3">Proyek</th>
                             <th className="px-4 py-3">Status</th>
                             <th className="px-4 py-3"></th>
                         </tr>
@@ -181,7 +182,7 @@ export default function Index({ users, filters }: Props) {
                         {users.data.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={7}
+                                    colSpan={8}
                                     className="px-4 py-10 text-center text-sm text-gray-500"
                                 >
                                     Pengguna tidak ditemukan.
@@ -202,6 +203,9 @@ export default function Index({ users, filters }: Props) {
                                     </td>
                                     <td className="px-4 py-3 text-gray-600">
                                         {u.department ?? '-'}
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-600">
+                                        {u.proyek ?? '-'}
                                     </td>
                                     <td className="px-4 py-3">
                                         {u.is_active ? (

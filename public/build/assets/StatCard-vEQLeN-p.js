@@ -1,1 +1,0 @@
-import{j as t}from"./app-CuCtxeA6.js";function d({label:e,value:r,accent:s}){return t.jsxs("div",{className:"rounded-lg border border-gray-200 bg-white p-5 shadow-sm",children:[t.jsx("div",{className:"text-sm font-medium text-gray-500",children:e}),t.jsx("div",{className:`mt-2 text-3xl font-semibold ${s??"text-gray-900"}`,children:r})]})}export{d as S};

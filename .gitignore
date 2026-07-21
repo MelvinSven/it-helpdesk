@@ -24,3 +24,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Company roster / staff assignments — not for a public repo
+/user-data.md
+/database/seeders/UserProyekSeeder.php

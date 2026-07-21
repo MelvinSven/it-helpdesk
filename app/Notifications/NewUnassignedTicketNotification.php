@@ -26,7 +26,10 @@ class NewUnassignedTicketNotification extends Notification implements ShouldQueu
             'ticket_date' => $this->ticket->created_at?->format('d/m/Y H:i'),
             'ticket_description' => $this->ticket->description,
             'requestor_name' => $this->ticket->requestor?->name,
-            'requestor_email' => $this->ticket->requestor?->email,
+            'ticket_status' => $this->ticket->status,
+            'ticket_status_label' => $this->ticket->statusLabel(),
+            'requestor_proyek' => $this->ticket->requestor?->proyek,
+            'assignee_name' => $this->ticket->assignee?->name,
             'actor_name' => $this->ticket->requestor?->name,
             'message' => "Tiket baru {$this->ticket->ticket_code} menunggu penugasan.",
         ];
@@ -44,7 +47,9 @@ class NewUnassignedTicketNotification extends Notification implements ShouldQueu
                 'ticketTitle' => $data['ticket_title'],
                 'ticketDate' => $data['ticket_date'],
                 'requestorName' => $data['requestor_name'],
-                'requestorEmail' => $data['requestor_email'],
+                'ticketStatus' => $data['ticket_status_label'],
+                'requestorProyek' => $data['requestor_proyek'],
+                'assigneeName' => $data['assignee_name'],
                 'ticketDescription' => $data['ticket_description'],
                 'ticketUrl' => route('tickets.show', $data['ticket_id']),
             ]);

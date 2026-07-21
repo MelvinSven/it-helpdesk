@@ -10,8 +10,11 @@ class TicketActivity extends Model
     public const UPDATED_AT = null;
 
     public const ACTION_CREATED = 'created';
+
     public const ACTION_ASSIGNED = 'assigned';
+
     public const ACTION_REASSIGNED = 'reassigned';
+
     public const ACTION_STATUS_CHANGED = 'status_changed';
 
     protected $fillable = ['ticket_id', 'user_id', 'action', 'meta'];

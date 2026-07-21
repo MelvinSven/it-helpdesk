@@ -24,7 +24,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        // ForwardNotificationToSupport is registered via event auto-discovery.
         Mail::extend('gmail', function (): GmailApiTransport {
             return new GmailApiTransport(
                 config('services.gmail.client_id'),

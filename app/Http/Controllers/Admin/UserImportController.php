@@ -29,12 +29,12 @@ class UserImportController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->fromArray(
-            ['ID Pengguna', 'Nama', 'Email', 'Peran', 'Departemen'],
+            ['ID Pengguna', 'Nama', 'Email', 'Peran', 'Departemen', 'Proyek'],
             null,
             'A1',
         );
         $sheet->fromArray(
-            ['EMP-001', 'Budi Santoso', 'budi@example.com', 'Staf', 'Keuangan'],
+            ['EMP-001', 'Budi Santoso', 'budi@example.com', 'Staf', 'Keuangan', 'Proyek A'],
             null,
             'A2',
         );
@@ -62,7 +62,7 @@ class UserImportController extends Controller
         $headers = array_map(fn ($h) => mb_strtolower(trim((string) $h)), $rows[0]);
 
         $colMap = [];
-        foreach (['id pengguna', 'nama', 'email', 'peran', 'departemen'] as $col) {
+        foreach (['id pengguna', 'nama', 'email', 'peran', 'departemen', 'proyek'] as $col) {
             $idx = array_search($col, $headers, true);
             if ($idx !== false) {
                 $colMap[$col] = $idx;
@@ -86,10 +86,11 @@ class UserImportController extends Controller
             $rawRole = mb_strtolower(trim((string) ($row[$colMap['peran']] ?? '')));
             $email = isset($colMap['email']) ? trim((string) ($row[$colMap['email']] ?? '')) : '';
             $department = isset($colMap['departemen']) ? trim((string) ($row[$colMap['departemen']] ?? '')) : '';
+            $proyek = isset($colMap['proyek']) ? trim((string) ($row[$colMap['proyek']] ?? '')) : '';
 
             $line = $lineNumber + 2; // 1-based, +1 for header
 
-            if ($userId === '' && $name === '' && $rawRole === '' && $email === '' && $department === '') {
+            if ($userId === '' && $name === '' && $rawRole === '' && $email === '' && $department === '' && $proyek === '') {
                 continue; // fully empty row (trailing Excel rows) — ignore silently
             }
 
@@ -124,6 +125,7 @@ class UserImportController extends Controller
                 'email' => $email !== '' ? $email : null,
                 'role' => $role,
                 'department' => $department !== '' ? $department : null,
+                'proyek' => $proyek !== '' ? $proyek : null,
                 'password' => $defaultPassword,
                 'is_active' => true,
             ]);

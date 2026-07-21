@@ -34,10 +34,6 @@ return [
         'refresh_token' => env('GMAIL_REFRESH_TOKEN'),
     ],
 
-    'support' => [
-        'notification_email' => env('SUPPORT_NOTIFICATION_EMAIL'),
-    ],
-
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

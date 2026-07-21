@@ -52,6 +52,7 @@ class UserController extends Controller
             'email' => ['nullable', 'email', 'unique:users,email'],
             'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_STAFF, User::ROLE_IT_SUPPORT])],
             'department' => ['nullable', 'string', 'max:100'],
+            'proyek' => ['nullable', 'string', 'max:100'],
             'password' => ['required', 'string', 'min:6'],
         ]);
 
@@ -77,6 +78,7 @@ class UserController extends Controller
             'email' => ['nullable', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_STAFF, User::ROLE_IT_SUPPORT])],
             'department' => ['nullable', 'string', 'max:100'],
+            'proyek' => ['nullable', 'string', 'max:100'],
             'password' => ['nullable', 'string', 'min:6'],
         ]);
 

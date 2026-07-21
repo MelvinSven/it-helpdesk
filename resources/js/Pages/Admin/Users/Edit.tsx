@@ -13,6 +13,7 @@ export default function Edit({ managed_user }: { managed_user: User }) {
         email: managed_user.email ?? '',
         role: managed_user.role,
         department: managed_user.department ?? '',
+        proyek: managed_user.proyek ?? '',
         password: '',
     });
 
@@ -104,6 +105,17 @@ export default function Edit({ managed_user }: { managed_user: User }) {
                             className="mt-2"
                             message={errors.department}
                         />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="proyek" value="Proyek" />
+                        <TextInput
+                            id="proyek"
+                            value={data.proyek}
+                            onChange={(e) => setData('proyek', e.target.value)}
+                            className="mt-1 block w-full"
+                        />
+                        <InputError className="mt-2" message={errors.proyek} />
                     </div>
 
                     <div>
