@@ -25,11 +25,10 @@ class TicketAssignmentController extends Controller
         $previousAssigneeId = $ticket->assignee_id;
         $ticket->assignee_id = $assignee->id;
 
-        if ($ticket->status === Ticket::STATUS_NEW) {
-            $ticket->status = Ticket::STATUS_IN_PROGRESS;
-        }
-
+        // Assignment must not touch the status: the ticket stays "Baru" until
+        // the assignee explicitly starts working on it.
         $ticket->save();
+        $ticket->setRelation('assignee', $assignee);
 
         TicketActivity::record(
             $ticket,
@@ -41,6 +40,12 @@ class TicketAssignmentController extends Controller
         );
 
         $assignee->notify(new TicketAssignedNotification($ticket, $request->user()));
+
+        if ($ticket->requestor
+            && $ticket->requestor_id !== $assignee->id
+            && $ticket->requestor_id !== $request->user()->id) {
+            $ticket->requestor->notify(new TicketAssignedNotification($ticket, $request->user()));
+        }
 
         return back()->with('success', "Tiket ditugaskan ke {$assignee->name}.");
     }

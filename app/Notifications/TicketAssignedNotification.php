@@ -19,6 +19,9 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
+        $isAssignee = $notifiable instanceof User
+            && $notifiable->id === $this->ticket->assignee_id;
+
         return [
             'type' => 'ticket_assigned',
             'ticket_id' => $this->ticket->id,
@@ -32,7 +35,9 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
             'requestor_proyek' => $this->ticket->requestor?->proyek,
             'assignee_name' => $this->ticket->assignee?->name,
             'actor_name' => $this->actor?->name,
-            'message' => "Tiket {$this->ticket->ticket_code} ditugaskan kepada Anda.",
+            'message' => $isAssignee
+                ? "Tiket {$this->ticket->ticket_code} ditugaskan kepada Anda."
+                : "Tiket {$this->ticket->ticket_code} ditugaskan kepada {$this->ticket->assignee?->name}.",
         ];
     }
 
@@ -40,10 +45,15 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
     {
         $data = $this->toArray($notifiable);
 
+        $isAssignee = $notifiable instanceof User
+            && $notifiable->id === $this->ticket->assignee_id;
+
         return (new MailMessage)
             ->subject('['.config('app.name').'] '.$data['message'])
             ->view('mail.new-ticket', [
-                'leadLine' => 'Tiket ditugaskan kepada Anda. Pelapor:',
+                'leadLine' => $isAssignee
+                    ? 'Tiket ditugaskan kepada Anda. Pelapor:'
+                    : "Tiket ditugaskan kepada {$data['assignee_name']}. Pelapor:",
                 'ticketCode' => $data['ticket_code'],
                 'ticketTitle' => $data['ticket_title'],
                 'ticketDate' => $data['ticket_date'],

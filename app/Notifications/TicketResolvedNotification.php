@@ -19,6 +19,9 @@ class TicketResolvedNotification extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
+        $isRequestor = $notifiable instanceof User
+            && $notifiable->id === $this->ticket->requestor_id;
+
         return [
             'type' => 'ticket_resolved',
             'ticket_id' => $this->ticket->id,
@@ -32,7 +35,9 @@ class TicketResolvedNotification extends Notification implements ShouldQueue
             'requestor_proyek' => $this->ticket->requestor?->proyek,
             'assignee_name' => $this->ticket->assignee?->name,
             'actor_name' => $this->actor?->name,
-            'message' => "Tiket {$this->ticket->ticket_code} telah ditandai selesai. Mohon konfirmasi penyelesaian.",
+            'message' => $isRequestor
+                ? "Tiket {$this->ticket->ticket_code} telah ditandai selesai. Mohon konfirmasi penyelesaian."
+                : "Tiket {$this->ticket->ticket_code} telah ditandai selesai".($this->actor ? " oleh {$this->actor->name}" : '').'.',
         ];
     }
 
@@ -40,12 +45,19 @@ class TicketResolvedNotification extends Notification implements ShouldQueue
     {
         $data = $this->toArray($notifiable);
 
+        $isRequestor = $notifiable instanceof User
+            && $notifiable->id === $this->ticket->requestor_id;
+
         return (new MailMessage)
             ->subject('['.config('app.name').'] '.$data['message'])
             ->view('mail.new-ticket', [
-                'leadLine' => 'Tiket Anda telah selesai. Mohon konfirmasi:',
-                'noticeLine' => 'Jika masalah sudah teratasi, tidak diperlukan tindakan. Jika belum, buka kembali tiket dari halaman berikut.',
-                'ctaLabel' => 'Konfirmasi / Buka Kembali',
+                'leadLine' => $isRequestor
+                    ? 'Tiket Anda telah selesai. Mohon konfirmasi:'
+                    : 'Tiket telah ditandai selesai'.($data['actor_name'] ? " oleh {$data['actor_name']}" : '').'. Pelapor:',
+                'noticeLine' => $isRequestor
+                    ? 'Jika masalah sudah teratasi, tidak diperlukan tindakan. Jika belum, buka kembali tiket dari halaman berikut.'
+                    : null,
+                'ctaLabel' => $isRequestor ? 'Konfirmasi / Buka Kembali' : null,
                 'ticketCode' => $data['ticket_code'],
                 'ticketTitle' => $data['ticket_title'],
                 'ticketDate' => $data['ticket_date'],

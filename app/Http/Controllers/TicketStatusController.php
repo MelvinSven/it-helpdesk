@@ -59,7 +59,9 @@ class TicketStatusController extends Controller
 
             Notification::send(
                 $admins,
-                new TicketStatusChangedNotification($ticket, $oldStatus, $ticket->status, $request->user())
+                $ticket->status === Ticket::STATUS_RESOLVED
+                    ? new TicketResolvedNotification($ticket, $request->user())
+                    : new TicketStatusChangedNotification($ticket, $oldStatus, $ticket->status, $request->user())
             );
         }
 

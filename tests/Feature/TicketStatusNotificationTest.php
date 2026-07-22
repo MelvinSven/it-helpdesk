@@ -70,7 +70,7 @@ class TicketStatusNotificationTest extends TestCase
         Notification::assertSentTo($otherAdmin, TicketStatusChangedNotification::class);
     }
 
-    public function test_resolving_sends_confirmation_to_requestor_and_status_change_to_admin(): void
+    public function test_resolving_sends_resolved_notification_to_requestor_and_admin(): void
     {
         Notification::fake();
 
@@ -85,7 +85,28 @@ class TicketStatusNotificationTest extends TestCase
             ->assertRedirect();
 
         Notification::assertSentTo($requestor, TicketResolvedNotification::class);
-        Notification::assertSentTo($admin, TicketStatusChangedNotification::class);
+        Notification::assertSentTo($admin, TicketResolvedNotification::class);
+        Notification::assertNotSentTo($admin, TicketStatusChangedNotification::class);
+    }
+
+    public function test_resolved_mail_wording_differs_for_requestor_and_admin(): void
+    {
+        $requestor = User::factory()->create(['role' => User::ROLE_STAFF]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $actor = User::factory()->create(['role' => User::ROLE_IT_SUPPORT]);
+        $ticket = $this->makeTicket($requestor);
+        $ticket->status = Ticket::STATUS_RESOLVED;
+
+        $notification = new TicketResolvedNotification($ticket, $actor);
+
+        $requestorHtml = (string) $notification->toMail($requestor)->render();
+        $this->assertStringContainsString('Tiket Anda telah selesai', $requestorHtml);
+        $this->assertStringContainsString('Konfirmasi / Buka Kembali', $requestorHtml);
+
+        $adminHtml = (string) $notification->toMail($admin)->render();
+        $this->assertStringContainsString("selesai oleh {$actor->name}", $adminHtml);
+        $this->assertStringNotContainsString('Tiket Anda', $adminHtml);
+        $this->assertStringNotContainsString('Konfirmasi / Buka Kembali', $adminHtml);
     }
 
     public function test_inactive_admins_are_not_notified(): void
