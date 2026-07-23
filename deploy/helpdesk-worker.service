@@ -1,0 +1,32 @@
+# /etc/systemd/system/helpdesk-worker.service
+#
+# Persistent queue worker for the IT Helpdesk app.
+# Required: every ticket notification implements ShouldQueue, so without a
+# running worker no email is ever delivered (QUEUE_CONNECTION=database).
+#
+# Install:
+#   sudo cp deploy/helpdesk-worker.service /etc/systemd/system/
+#   (edit User/WorkingDirectory/php path to match the server)
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now helpdesk-worker
+#
+# deploy.sh calls `php artisan queue:restart`, which tells this worker to
+# gracefully stop after its current job; systemd (Restart=always) respawns it
+# on the new code.
+
+[Unit]
+Description=IT Helpdesk queue worker
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/it-helpdesk
+ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600 --timeout=120
+Restart=always
+RestartSec=5
+# Cap memory to force periodic restarts (guards leaks in long-running workers)
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target
