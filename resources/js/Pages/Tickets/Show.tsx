@@ -147,14 +147,7 @@ export default function Show({ ticket, can, it_support_users }: Props) {
         <AuthenticatedLayout
             header={
                 <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl font-semibold text-gray-900">
-                            {ticket.title}
-                        </h1>
-                        <p className="font-mono text-xs text-gray-500">
-                            {ticket.ticket_code}
-                        </p>
-                    </div>
+                    
                     {can.delete && (
                         <button
                             type="button"
@@ -172,7 +165,13 @@ export default function Show({ ticket, can, it_support_users }: Props) {
             }
         >
             <Head title={ticket.ticket_code} />
-
+            <div className='mb-5'>
+                <h1 className="text-xl font-semibold text-gray-900">{ticket.title}
+                </h1>
+                <p className="font-mono text-xs text-gray-500">
+                    {ticket.ticket_code}
+                </p>
+            </div>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <div className="space-y-6 lg:col-span-2">
                     <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
