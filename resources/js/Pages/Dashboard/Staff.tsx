@@ -168,6 +168,20 @@ export default function StaffDashboard({ stats, recent_tickets, borrowed_items }
                     )}
                 </div>
             </div>
+
+            <div className="mt-6 rounded-lg border border-brand-100 bg-brand-50 px-5 py-4">
+                <p className="text-sm text-gray-700">
+                    <span className="font-semibold">Butuh bantuan?</span>{' '}
+                    hubungi tim IT Support{' '}
+                    <a
+                        href="tel:+6281270410245"
+                        className="font-medium text-brand-700 hover:underline"
+                    >
+                        (+62 812-7041-0245)
+                    </a>{' '}
+                    jika mengalami kendala
+                </p>
+            </div>
         </AuthenticatedLayout>
     );
 }
