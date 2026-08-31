@@ -33,6 +33,7 @@ class BorrowController extends Controller
         if ($search = $request->string('search')->toString()) {
             $query->where(function ($q) use ($search) {
                 $q->where('item_name', 'like', "%{$search}%")
+                    ->orWhere('kode_barang', 'like', "%{$search}%")
                     ->orWhere('serial_number', 'like', "%{$search}%")
                     ->orWhere('borrower_name', 'like', "%{$search}%");
             });
@@ -59,10 +60,10 @@ class BorrowController extends Controller
     public function create(): Response
     {
         return Inertia::render('Borrows/Create', [
-            // Only available (not borrowed) items can be picked by serial number.
+            // Only available (not borrowed) items can be picked by item code.
             'items' => Item::where('status', Item::STATUS_AVAILABLE)
-                ->orderBy('serial_number')
-                ->get(['id', 'serial_number', 'item_name', 'brand_name', 'type']),
+                ->orderBy('kode_barang')
+                ->get(['id', 'kode_barang', 'serial_number', 'item_name', 'brand_name', 'type']),
             'users' => User::where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name', 'user_id', 'department']),
@@ -72,7 +73,7 @@ class BorrowController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            // Item is chosen by serial number in the form; only available ones qualify.
+            // Item is chosen by item code in the form; only available ones qualify.
             'item_id' => ['required', Rule::exists('items', 'id')->where('status', Item::STATUS_AVAILABLE)],
             // Borrower is a real system user, not free text.
             'borrower_id' => ['required', Rule::exists('users', 'id')->where('is_active', true)],
@@ -99,6 +100,7 @@ class BorrowController extends Controller
                 'item_id' => $locked->id,
                 'borrower_id' => $borrower->id,
                 'item_name' => $locked->item_name,
+                'kode_barang' => $locked->kode_barang,
                 'serial_number' => $locked->serial_number,
                 // Snapshot the name so history survives a later rename.
                 'borrower_name' => $borrower->name,
@@ -122,7 +124,7 @@ class BorrowController extends Controller
         abort_if(! $borrow->isBorrowed(), 404);
 
         return Inertia::render('Borrows/Return', [
-            'borrow' => $borrow->only(['id', 'item_name', 'serial_number', 'borrower_name']),
+            'borrow' => $borrow->only(['id', 'item_name', 'kode_barang', 'serial_number', 'borrower_name']),
             'can_return' => $request->user()->isAdmin() || $request->user()->id === $borrow->borrower_id,
         ]);
     }

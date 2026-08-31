@@ -18,6 +18,7 @@ class BorrowRecord extends Model
         'item_id',
         'borrower_id',
         'item_name',
+        'kode_barang',
         'serial_number',
         'borrower_name',
         'borrow_date',

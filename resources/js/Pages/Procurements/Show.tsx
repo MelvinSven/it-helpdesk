@@ -179,7 +179,7 @@ export default function Show({
                                             {item.item_name}
                                         </p>
                                         <p className="font-mono text-xs text-gray-500">
-                                            {item.serial_number} ·{' '}
+                                            {item.kode_barang} ·{' '}
                                             {item.brand_name} · {item.type}
                                         </p>
                                     </div>

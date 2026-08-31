@@ -39,8 +39,8 @@ class ProcurementRequestController extends Controller
 
         // Items the request is linked to (many-to-many), for the detail view.
         $procurement->load([
-            'items' => fn ($q) => $q->orderBy('serial_number')
-                ->select('items.id', 'serial_number', 'item_name', 'brand_name', 'type', 'status'),
+            'items' => fn ($q) => $q->orderBy('kode_barang')
+                ->select('items.id', 'kode_barang', 'item_name', 'brand_name', 'type', 'status'),
         ]);
 
         return Inertia::render('Procurements/Show', [

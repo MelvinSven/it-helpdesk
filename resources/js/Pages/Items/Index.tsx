@@ -119,7 +119,7 @@ export default function Index({ items, filters, can }: Props) {
                             setForm({ ...form, search: e.target.value })
                         }
                         onKeyDown={(e) => e.key === 'Enter' && apply()}
-                        placeholder="Cari nama, nomor, merek, MAC..."
+                        placeholder="Cari nama, kode barang, merek, MAC..."
                         className="rounded-md border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500"
                     />
                     <select
@@ -177,7 +177,7 @@ export default function Index({ items, filters, can }: Props) {
                     <thead className="bg-gray-50">
                         <tr className="text-left text-xs uppercase text-gray-500">
                             <th className="px-4 py-3">Gambar</th>
-                            <th className="px-4 py-3">Nomor</th>
+                            <th className="px-4 py-3">Kode Barang</th>
                             <th className="px-4 py-3">Nama Barang</th>
                             <th className="px-4 py-3">Merek</th>
                             <th className="px-4 py-3">MAC Address</th>
@@ -215,7 +215,7 @@ export default function Index({ items, filters, can }: Props) {
                                         )}
                                     </td>
                                     <td className="px-4 py-3 font-mono text-xs">
-                                        {item.serial_number}
+                                        {item.kode_barang}
                                     </td>
                                     <td className="px-4 py-3 font-medium text-gray-900">
                                         {item.item_name}
@@ -310,7 +310,7 @@ export default function Index({ items, filters, can }: Props) {
                             File harus berformat <strong>.xlsx</strong> atau{' '}
                             <strong>.xls</strong> dengan header:{' '}
                             <code className="rounded bg-gray-100 px-1 text-xs">
-                                Nomor Seri
+                                Kode Barang
                             </code>
                             ,{' '}
                             <code className="rounded bg-gray-100 px-1 text-xs">

@@ -4,7 +4,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { ChangeEventHandler, FormEventHandler, useState } from 'react';
 
 function formatMacAddress(value: string): string {
     const hex = value
@@ -17,7 +17,9 @@ function formatMacAddress(value: string): string {
 
 
 export default function Create() {
+    const [tooManyImages, setTooManyImages] = useState(false);
     const { data, setData, post, processing, errors, progress } = useForm<{
+        kode_barang: string;
         serial_number: string;
         item_name: string;
         brand_name: string;
@@ -25,8 +27,9 @@ export default function Create() {
         type: string;
         condition: string;
         description: string;
-        item_image: File | null;
+        images: File[];
     }>({
+        kode_barang: '',
         serial_number: '',
         item_name: '',
         brand_name: '',
@@ -34,8 +37,32 @@ export default function Create() {
         type: '',
         condition: 'baik',
         description: '',
-        item_image: null,
+        images: [],
     });
+
+    // Server-side rules land on `images` and `images.0`, `images.1`, ...
+    // so collect them all rather than reading a single key.
+    const imageError = Object.entries(errors)
+        .filter(([key]) => key === 'images' || key.startsWith('images.'))
+        .map(([, message]) => message)
+        .join(' ');
+
+    const pickImages: ChangeEventHandler<HTMLInputElement> = (e) => {
+        const files = Array.from(e.target.files ?? []);
+
+        // PHP's max_file_uploads (default 20) silently drops extra files,
+        // so reject oversized batches before they reach the server.
+        if (files.length > 20) {
+            setTooManyImages(true);
+            e.target.value = '';
+            setData('images', []);
+
+            return;
+        }
+
+        setTooManyImages(false);
+        setData('images', files);
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -57,8 +84,27 @@ export default function Create() {
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <InputLabel
+                                htmlFor="kode_barang"
+                                value="Kode Barang"
+                            />
+                            <TextInput
+                                id="kode_barang"
+                                value={data.kode_barang}
+                                onChange={(e) =>
+                                    setData('kode_barang', e.target.value)
+                                }
+                                className="mt-1 block w-full"
+                                isFocused
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.kode_barang}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
                                 htmlFor="serial_number"
-                                value="Nomor"
+                                value="Nomor Seri (opsional)"
                             />
                             <TextInput
                                 id="serial_number"
@@ -67,14 +113,16 @@ export default function Create() {
                                     setData('serial_number', e.target.value)
                                 }
                                 className="mt-1 block w-full"
-                                isFocused
                             />
                             <InputError
                                 className="mt-2"
                                 message={errors.serial_number}
                             />
                         </div>
-                        <div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
                             <InputLabel htmlFor="item_name" value="Nama Barang" />
                             <TextInput
                                 id="item_name"
@@ -198,24 +246,36 @@ export default function Create() {
 
                     <div>
                         <InputLabel
-                            htmlFor="item_image"
+                            htmlFor="images"
                             value="Gambar Barang (opsional)"
                         />
                         <input
-                            id="item_image"
+                            id="images"
                             type="file"
+                            multiple
                             accept="image/jpeg,image/png,image/webp"
-                            onChange={(e) =>
-                                setData(
-                                    'item_image',
-                                    e.target.files?.[0] ?? null,
-                                )
-                            }
+                            onChange={pickImages}
                             className="mt-1 block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
                         />
                         <p className="mt-1 text-xs text-gray-500">
-                            JPG, PNG, atau WEBP. Maksimal 5MB.
+                            JPG, PNG, atau WEBP. Maksimal 20MB per gambar,
+                            hingga 20 gambar. Gambar pertama menjadi gambar
+                            utama, sisanya masuk ke galeri.
                         </p>
+                        {data.images.length > 0 && (
+                            <ul className="mt-2 space-y-1 text-xs text-gray-600">
+                                {data.images.map((file, i) => (
+                                    <li key={`${file.name}-${i}`}>
+                                        {i === 0 ? '★ ' : '• '}
+                                        {file.name}{' '}
+                                        <span className="text-gray-400">
+                                            ({(file.size / 1024 / 1024).toFixed(1)}{' '}
+                                            MB)
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                         {progress && (
                             <p className="mt-1 text-xs text-gray-500">
                                 Mengunggah: {progress.percentage}%
@@ -223,7 +283,11 @@ export default function Create() {
                         )}
                         <InputError
                             className="mt-2"
-                            message={errors.item_image}
+                            message={
+                                tooManyImages
+                                    ? 'Maksimal 20 gambar per unggahan.'
+                                    : imageError
+                            }
                         />
                     </div>
 

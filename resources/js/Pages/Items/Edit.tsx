@@ -11,6 +11,7 @@ import { FormEventHandler } from 'react';
 export default function Edit({ item }: { item: Item }) {
     const { data, setData, post, processing, errors, progress } = useForm<{
         _method: string;
+        kode_barang: string;
         serial_number: string;
         item_name: string;
         brand_name: string;
@@ -21,7 +22,8 @@ export default function Edit({ item }: { item: Item }) {
         item_image: File | null;
     }>({
         _method: 'patch',
-        serial_number: item.serial_number,
+        kode_barang: item.kode_barang,
+        serial_number: item.serial_number ?? '',
         item_name: item.item_name,
         brand_name: item.brand_name,
         mac_address: item.mac_address ?? '',
@@ -60,8 +62,26 @@ export default function Edit({ item }: { item: Item }) {
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <InputLabel
+                                htmlFor="kode_barang"
+                                value="Kode Barang"
+                            />
+                            <TextInput
+                                id="kode_barang"
+                                value={data.kode_barang}
+                                onChange={(e) =>
+                                    setData('kode_barang', e.target.value)
+                                }
+                                className="mt-1 block w-full"
+                            />
+                            <InputError
+                                className="mt-2"
+                                message={errors.kode_barang}
+                            />
+                        </div>
+                        <div>
+                            <InputLabel
                                 htmlFor="serial_number"
-                                value="Nomor"
+                                value="Nomor Seri (opsional)"
                             />
                             <TextInput
                                 id="serial_number"
@@ -76,7 +96,10 @@ export default function Edit({ item }: { item: Item }) {
                                 message={errors.serial_number}
                             />
                         </div>
-                        <div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
                             <InputLabel htmlFor="item_name" value="Nama Barang" />
                             <TextInput
                                 id="item_name"
@@ -219,7 +242,7 @@ export default function Edit({ item }: { item: Item }) {
                         </div>
                         <p className="mt-1 text-xs text-gray-500">
                             Pilih berkas baru untuk mengganti gambar saat ini.
-                            JPG, PNG, atau WEBP. Maksimal 5MB.
+                            JPG, PNG, atau WEBP. Maksimal 20MB.
                         </p>
                         {progress && (
                             <p className="mt-1 text-xs text-gray-500">

@@ -76,7 +76,7 @@ class DashboardController extends Controller
                 ->get(),
             'borrowed_items' => BorrowRecord::where('status', BorrowRecord::STATUS_BORROWED)
                 ->latest()
-                ->get(['id', 'item_name', 'serial_number', 'borrower_name', 'borrow_date', 'purpose']),
+                ->get(['id', 'item_name', 'kode_barang', 'borrower_name', 'borrow_date', 'purpose']),
         ]);
     }
 
@@ -114,7 +114,7 @@ class DashboardController extends Controller
             'borrowed_items' => BorrowRecord::where('status', BorrowRecord::STATUS_BORROWED)
                 ->where('borrower_id', $user->id)
                 ->latest()
-                ->get(['id', 'item_name', 'serial_number', 'borrower_name', 'borrow_date', 'purpose']),
+                ->get(['id', 'item_name', 'kode_barang', 'borrower_name', 'borrow_date', 'purpose']),
         ]);
     }
 
@@ -199,7 +199,7 @@ class DashboardController extends Controller
             'borrowed_items' => BorrowRecord::where('status', BorrowRecord::STATUS_BORROWED)
                 ->where('borrower_id', $user->id)
                 ->latest()
-                ->get(['id', 'item_name', 'serial_number', 'borrower_name', 'borrow_date', 'purpose']),
+                ->get(['id', 'item_name', 'kode_barang', 'borrower_name', 'borrow_date', 'purpose']),
         ]);
     }
 }

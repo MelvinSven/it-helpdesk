@@ -131,7 +131,7 @@ export default function StaffDashboard({ stats, recent_tickets, borrowed_items }
                                 <thead>
                                     <tr className="text-left text-xs uppercase text-gray-500">
                                         <th className="py-2 pr-4">Nama Barang</th>
-                                        <th className="py-2 pr-4">Nomor</th>
+                                        <th className="py-2 pr-4">Kode Barang</th>
                                         <th className="py-2 pr-4">Tgl Pinjam</th>
                                         <th className="py-2 pr-4">Keperluan</th>
                                         <th className="py-2 pr-4">Aksi</th>
@@ -144,7 +144,7 @@ export default function StaffDashboard({ stats, recent_tickets, borrowed_items }
                                                 {b.item_name}
                                             </td>
                                             <td className="py-2 pr-4 font-mono text-xs text-gray-600">
-                                                {b.serial_number}
+                                                {b.kode_barang}
                                             </td>
                                             <td className="py-2 pr-4 text-gray-600">
                                                 {fmtDate(b.borrow_date)}

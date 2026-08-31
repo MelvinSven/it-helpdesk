@@ -73,7 +73,8 @@ export type ItemCondition = 'baru' | 'baik' | 'rusak_ringan' | 'rusak_berat';
 
 export interface Item {
     id: number;
-    serial_number: string;
+    kode_barang: string;
+    serial_number: string | null;
     item_name: string;
     brand_name: string;
     mac_address: string | null;
@@ -102,7 +103,8 @@ export interface BorrowRecord {
     item_id: number;
     borrower_id: number | null;
     item_name: string;
-    serial_number: string;
+    kode_barang: string;
+    serial_number: string | null;
     borrower_name: string;
     borrow_date: string;
     purpose: string;
@@ -128,7 +130,7 @@ export interface ProcurementRequest {
     updated_at: string;
     items?: Pick<
         Item,
-        'id' | 'serial_number' | 'item_name' | 'brand_name' | 'type' | 'status'
+        'id' | 'kode_barang' | 'item_name' | 'brand_name' | 'type' | 'status'
     >[];
 }
 

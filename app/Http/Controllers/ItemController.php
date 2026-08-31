@@ -31,6 +31,7 @@ class ItemController extends Controller
         if ($search = $request->string('search')->toString()) {
             $query->where(function ($q) use ($search) {
                 $q->where('item_name', 'like', "%{$search}%")
+                    ->orWhere('kode_barang', 'like', "%{$search}%")
                     ->orWhere('serial_number', 'like', "%{$search}%")
                     ->orWhere('brand_name', 'like', "%{$search}%")
                     ->orWhere('mac_address', 'like', "%{$search}%");
@@ -96,23 +97,37 @@ class ItemController extends Controller
         $this->authorize('create', Item::class);
 
         $validated = $request->validate([
-            'serial_number' => ['required', 'string', 'max:100', 'unique:items,serial_number'],
+            'kode_barang' => ['required', 'string', 'max:100', 'unique:items,kode_barang'],
+            'serial_number' => ['nullable', 'string', 'max:100'],
             'item_name' => ['required', 'string', 'max:255'],
             'brand_name' => ['required', 'string', 'max:255'],
             'mac_address' => ['nullable', 'string', 'max:100'],
             'type' => ['required', 'string', 'max:100'],
             'condition' => ['required', Rule::in(Item::CONDITIONS)],
             'description' => ['nullable', 'string', 'max:5000'],
-            'item_image' => ['nullable', 'image', 'max:5120'],
+            // max_file_uploads caps the batch at 20; the rest is the same
+            // contract as storeImages().
+            'images' => ['nullable', 'array', 'max:20'],
+            'images.*' => ['image', 'max:20480'],
         ]);
 
-        if ($request->hasFile('item_image')) {
-            $validated['item_image'] = $request->file('item_image')->store('items', 'public');
+        $files = $request->file('images', []);
+        unset($validated['images']); // not a column; handled below
+
+        // The first upload becomes the main image, everything else lands in
+        // the gallery — same convention as storeImages().
+        if ($files) {
+            $validated['item_image'] = array_shift($files)->store('items', 'public');
         }
 
         $validated['status'] = Item::STATUS_AVAILABLE;
 
-        Item::create($validated);
+        $item = Item::create($validated);
+
+        $item->images()->createMany(array_map(
+            fn ($file) => ['image_path' => $file->store('items', 'public')],
+            $files,
+        ));
 
         return redirect()->route('items.index')->with('success', 'Barang berhasil ditambahkan.');
     }
@@ -132,14 +147,15 @@ class ItemController extends Controller
 
         // Status is driven by borrow/return, so it stays out of the edit form.
         $validated = $request->validate([
-            'serial_number' => ['required', 'string', 'max:100', Rule::unique('items', 'serial_number')->ignore($item->id)],
+            'kode_barang' => ['required', 'string', 'max:100', Rule::unique('items', 'kode_barang')->ignore($item->id)],
+            'serial_number' => ['nullable', 'string', 'max:100'],
             'item_name' => ['required', 'string', 'max:255'],
             'brand_name' => ['required', 'string', 'max:255'],
             'mac_address' => ['nullable', 'string', 'max:100'],
             'type' => ['required', 'string', 'max:100'],
             'condition' => ['required', Rule::in(Item::CONDITIONS)],
             'description' => ['nullable', 'string', 'max:5000'],
-            'item_image' => ['nullable', 'image', 'max:5120'],
+            'item_image' => ['nullable', 'image', 'max:20480'],
         ]);
 
         if ($request->hasFile('item_image')) {
@@ -163,7 +179,7 @@ class ItemController extends Controller
 
         $request->validate([
             'images' => ['required', 'array', 'min:1', 'max:20'],
-            'images.*' => ['image', 'max:5120'],
+            'images.*' => ['image', 'max:20480'],
         ]);
 
         $files = $request->file('images');

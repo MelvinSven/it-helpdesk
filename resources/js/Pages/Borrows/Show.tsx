@@ -111,9 +111,9 @@ export default function Show({
                     </div>
                     <dl className="divide-y divide-gray-100">
                         <Row label="Nama Barang">{borrow.item_name}</Row>
-                        <Row label="Nomor Barang">
+                        <Row label="Kode Barang">
                             <span className="font-mono">
-                                {borrow.serial_number}
+                                {borrow.kode_barang}
                             </span>
                         </Row>
                         <Row label="Peminjam">{borrow.borrower_name}</Row>

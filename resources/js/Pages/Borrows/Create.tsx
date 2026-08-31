@@ -9,7 +9,7 @@ import { FormEventHandler, useMemo, useRef, useState } from 'react';
 
 interface ItemOption {
     id: number;
-    serial_number: string;
+    kode_barang: string;
     item_name: string;
     brand_name: string;
     type: string;
@@ -202,16 +202,16 @@ export default function Create({
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <InputLabel
-                                htmlFor="serial_number"
-                                value="Nomor"
+                                htmlFor="kode_barang"
+                                value="Kode Barang"
                             />
                             <Combobox<ItemOption>
-                                id="serial_number"
+                                id="kode_barang"
                                 options={items}
-                                primary={(o) => o.serial_number}
+                                primary={(o) => o.kode_barang}
                                 secondary={(o) => o.item_name}
                                 matches={(o, q) =>
-                                    o.serial_number
+                                    o.kode_barang
                                         .toLowerCase()
                                         .includes(q) ||
                                     o.item_name.toLowerCase().includes(q)
@@ -220,7 +220,7 @@ export default function Create({
                                     setSelectedItem(o);
                                     setData('item_id', o?.id ?? '');
                                 }}
-                                placeholder="Ketik nomor barang..."
+                                placeholder="Ketik kode barang..."
                                 isFocused
                             />
                             <p className="mt-1 text-xs text-gray-500">

@@ -19,6 +19,7 @@ class ItemDetailTest extends TestCase
     private function item(string $serial = 'SN-DET-0001', string $name = 'Laptop'): Item
     {
         return Item::create([
+            'kode_barang' => str_replace('SN-', 'BRG-', $serial),
             'serial_number' => $serial,
             'item_name' => $name,
             'brand_name' => 'Acme',
@@ -35,6 +36,7 @@ class ItemDetailTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => null,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => 'Andi',
             'borrow_date' => '2026-06-01',
@@ -193,6 +195,108 @@ class ItemDetailTest extends TestCase
         $this->assertTrue($itemB->procurementRequests()->whereKey($request->id)->exists());
     }
 
+    public function test_creating_an_item_accepts_multiple_images(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->post(route('items.store'), [
+            'kode_barang' => 'BRG-IMG-001',
+            'item_name' => 'Laptop',
+            'brand_name' => 'Acme',
+            'type' => 'Laptop',
+            'condition' => Item::CONDITION_GOOD,
+            'images' => [
+                UploadedFile::fake()->image('main.jpg'),
+                UploadedFile::fake()->image('extra-1.jpg'),
+                UploadedFile::fake()->image('extra-2.jpg'),
+            ],
+        ])->assertRedirect(route('items.index'));
+
+        $item = Item::where('kode_barang', 'BRG-IMG-001')->firstOrFail();
+
+        // First upload is the main image, the rest fall through to the gallery.
+        $this->assertNotNull($item->item_image);
+        Storage::disk('public')->assertExists($item->item_image);
+
+        $this->assertCount(2, $item->images);
+        foreach ($item->images as $image) {
+            Storage::disk('public')->assertExists($image->image_path);
+        }
+    }
+
+    public function test_creating_an_item_without_images_still_works(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->post(route('items.store'), [
+            'kode_barang' => 'BRG-IMG-002',
+            'item_name' => 'Mouse',
+            'brand_name' => 'Acme',
+            'type' => 'Mouse',
+            'condition' => Item::CONDITION_GOOD,
+        ])->assertRedirect(route('items.index'));
+
+        $item = Item::where('kode_barang', 'BRG-IMG-002')->firstOrFail();
+        $this->assertNull($item->item_image);
+        $this->assertCount(0, $item->images);
+    }
+
+    public function test_creating_an_item_accepts_an_image_larger_than_5mb(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->post(route('items.store'), [
+            'kode_barang' => 'BRG-IMG-003',
+            'item_name' => 'Monitor',
+            'brand_name' => 'Acme',
+            'type' => 'Monitor',
+            'condition' => Item::CONDITION_GOOD,
+            // 12MB — over the old 5MB cap, under the new 20MB one.
+            'images' => [UploadedFile::fake()->image('big.jpg')->size(12288)],
+        ])->assertRedirect(route('items.index'));
+
+        $this->assertNotNull(
+            Item::where('kode_barang', 'BRG-IMG-003')->firstOrFail()->item_image,
+        );
+    }
+
+    public function test_creating_an_item_rejects_an_image_over_20mb(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->post(route('items.store'), [
+            'kode_barang' => 'BRG-IMG-004',
+            'item_name' => 'Monitor',
+            'brand_name' => 'Acme',
+            'type' => 'Monitor',
+            'condition' => Item::CONDITION_GOOD,
+            'images' => [UploadedFile::fake()->image('huge.jpg')->size(20481)],
+        ])->assertSessionHasErrors('images.0');
+
+        $this->assertDatabaseMissing('items', ['kode_barang' => 'BRG-IMG-004']);
+    }
+
+    public function test_creating_an_item_rejects_a_non_image_upload(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->post(route('items.store'), [
+            'kode_barang' => 'BRG-IMG-005',
+            'item_name' => 'Monitor',
+            'brand_name' => 'Acme',
+            'type' => 'Monitor',
+            'condition' => Item::CONDITION_GOOD,
+            'images' => [UploadedFile::fake()->create('doc.pdf', 100, 'application/pdf')],
+        ])->assertSessionHasErrors('images.0');
+
+        $this->assertDatabaseMissing('items', ['kode_barang' => 'BRG-IMG-005']);
+    }
+
     public function test_first_uploaded_image_becomes_the_main_image_and_the_rest_the_gallery(): void
     {
         Storage::fake('public');
@@ -320,6 +424,7 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
+            'kode_barang' => 'BRG-DESC-001',
             'serial_number' => 'SN-DESC-001',
             'item_name' => 'Laptop',
             'brand_name' => 'Acme',
@@ -333,6 +438,7 @@ class ItemDetailTest extends TestCase
         $this->assertEquals("Core i7, RAM 16GB\nWindows 11, Office 2024", $item->description);
 
         $this->actingAs($admin)->patch(route('items.update', $item), [
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'item_name' => $item->item_name,
             'brand_name' => $item->brand_name,
@@ -350,6 +456,7 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
+            'kode_barang' => 'BRG-DESC-002',
             'serial_number' => 'SN-DESC-002',
             'item_name' => 'Mouse',
             'brand_name' => 'Acme',

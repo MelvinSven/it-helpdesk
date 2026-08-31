@@ -19,6 +19,7 @@ class ItemImportController extends Controller
      * @var array<string, string[]>
      */
     private const COLUMNS = [
+        'kode_barang' => ['kode barang', 'kode', 'kode_barang', 'item code'],
         'serial_number' => ['nomor seri', 'nomor', 'serial number', 'serial_number'],
         'item_name' => ['nama barang', 'nama'],
         'brand_name' => ['merek', 'brand'],
@@ -28,7 +29,7 @@ class ItemImportController extends Controller
         'description' => ['deskripsi', 'description'],
     ];
 
-    private const REQUIRED = ['serial_number', 'item_name', 'brand_name', 'type', 'condition'];
+    private const REQUIRED = ['kode_barang', 'item_name', 'brand_name', 'type', 'condition'];
 
     public function template(): BinaryFileResponse
     {
@@ -38,12 +39,12 @@ class ItemImportController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         $sheet->fromArray(
-            ['Nomor Seri', 'Nama Barang', 'Merek', 'MAC Address', 'Tipe', 'Kondisi', 'Deskripsi'],
+            ['Kode Barang', 'Nomor Seri', 'Nama Barang', 'Merek', 'MAC Address', 'Tipe', 'Kondisi', 'Deskripsi'],
             null,
             'A1',
         );
         $sheet->fromArray(
-            ['SN-001', 'Laptop Dell', 'Dell', '00:1A:2B:3C:4D:5E', 'Laptop', 'Baru', 'Core i7, RAM 16GB, Windows 11'],
+            ['BRG-001', 'SN-001', 'Laptop Dell', 'Dell', '00:1A:2B:3C:4D:5E', 'Laptop', 'Baru', 'Core i7, RAM 16GB, Windows 11'],
             null,
             'A2',
         );
@@ -93,12 +94,13 @@ class ItemImportController extends Controller
 
         $imported = 0;
         $skipped = [];
-        $seenSerials = [];
+        $seenCodes = [];
 
         foreach (array_slice($rows, 1) as $offset => $row) {
             $line = $offset + 2; // 1-based, +1 for the header row
 
-            $serial = trim((string) ($row[$colMap['serial_number']] ?? ''));
+            $code = trim((string) ($row[$colMap['kode_barang']] ?? ''));
+            $serial = isset($colMap['serial_number']) ? trim((string) ($row[$colMap['serial_number']] ?? '')) : '';
             $name = trim((string) ($row[$colMap['item_name']] ?? ''));
             $brand = trim((string) ($row[$colMap['brand_name']] ?? ''));
             $type = trim((string) ($row[$colMap['type']] ?? ''));
@@ -111,36 +113,37 @@ class ItemImportController extends Controller
             $condition = str_replace(' ', '_', $rawCondition);
 
             // Skip fully blank rows silently (trailing rows from Excel).
-            if ($serial === '' && $name === '' && $brand === '' && $type === '' && $rawCondition === '') {
+            if ($code === '' && $serial === '' && $name === '' && $brand === '' && $type === '' && $rawCondition === '') {
                 continue;
             }
 
-            if ($serial === '' || $name === '' || $brand === '' || $type === '') {
-                $skipped[] = "Baris {$line}: Nomor Seri, Nama Barang, Merek, atau Tipe kosong.";
+            if ($code === '' || $name === '' || $brand === '' || $type === '') {
+                $skipped[] = "Baris {$line}: Kode Barang, Nama Barang, Merek, atau Tipe kosong.";
 
                 continue;
             }
 
             if (! in_array($condition, Item::CONDITIONS, true)) {
-                $skipped[] = "Baris {$line} ({$serial}): Kondisi tidak dikenal \"{$rawCondition}\".";
+                $skipped[] = "Baris {$line} ({$code}): Kondisi tidak dikenal \"{$rawCondition}\".";
 
                 continue;
             }
 
-            if (isset($seenSerials[$serial])) {
-                $skipped[] = "Baris {$line} ({$serial}): Nomor Seri duplikat di dalam file.";
+            if (isset($seenCodes[$code])) {
+                $skipped[] = "Baris {$line} ({$code}): Kode Barang duplikat di dalam file.";
 
                 continue;
             }
 
-            if (Item::where('serial_number', $serial)->exists()) {
-                $skipped[] = "Baris {$line} ({$serial}): Nomor Seri sudah terdaftar.";
+            if (Item::where('kode_barang', $code)->exists()) {
+                $skipped[] = "Baris {$line} ({$code}): Kode Barang sudah terdaftar.";
 
                 continue;
             }
 
             Item::create([
-                'serial_number' => $serial,
+                'kode_barang' => $code,
+                'serial_number' => $serial !== '' ? $serial : null,
                 'item_name' => $name,
                 'brand_name' => $brand,
                 'mac_address' => $mac !== '' ? $mac : null,
@@ -150,7 +153,7 @@ class ItemImportController extends Controller
                 'status' => Item::STATUS_AVAILABLE,
             ]);
 
-            $seenSerials[$serial] = true;
+            $seenCodes[$code] = true;
             $imported++;
         }
 

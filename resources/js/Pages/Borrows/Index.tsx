@@ -64,7 +64,7 @@ export default function Index({ borrows, filters, can }: Props) {
                             setForm({ ...form, search: e.target.value })
                         }
                         onKeyDown={(e) => e.key === 'Enter' && apply()}
-                        placeholder="Cari barang, nomor barang, peminjam..."
+                        placeholder="Cari barang, kode barang, peminjam..."
                         className="rounded-md border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500"
                     />
                     <select
@@ -96,7 +96,7 @@ export default function Index({ borrows, filters, can }: Props) {
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                     <thead className="bg-gray-50">
                         <tr className="text-left text-xs uppercase text-gray-500">
-                            <th className="px-4 py-3">Nomor</th>
+                            <th className="px-4 py-3">Kode Barang</th>
                             <th className="px-4 py-3">Nama Barang</th>
                             <th className="px-4 py-3">Peminjam</th>
                             <th className="px-4 py-3">Tgl Pinjam</th>
@@ -121,7 +121,7 @@ export default function Index({ borrows, filters, can }: Props) {
                             borrows.data.map((b) => (
                                 <tr key={b.id} className="hover:bg-gray-50">
                                     <td className="px-4 py-3 font-mono text-xs">
-                                        {b.serial_number}
+                                        {b.kode_barang}
                                     </td>
                                     <td className="px-4 py-3 font-medium text-gray-900">
                                         {b.item_name}

@@ -51,6 +51,7 @@ class ProcurementRequestTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $request = $this->record();
         $item = Item::create([
+            'kode_barang' => 'BRG-PR-1',
             'serial_number' => 'SN-PR-1',
             'item_name' => 'Laptop',
             'brand_name' => 'Acme',

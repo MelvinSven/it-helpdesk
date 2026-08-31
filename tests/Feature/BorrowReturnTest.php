@@ -18,6 +18,7 @@ class BorrowReturnTest extends TestCase
     private function item(array $overrides = []): Item
     {
         return Item::create(array_merge([
+            'kode_barang' => 'BRG-TEST-0001',
             'serial_number' => 'SN-TEST-0001',
             'item_name' => 'Test Laptop',
             'brand_name' => 'Acme',
@@ -47,7 +48,7 @@ class BorrowReturnTest extends TestCase
         $this->assertDatabaseHas('borrow_records', [
             'item_id' => $item->id,
             'item_name' => 'Test Laptop',
-            'serial_number' => 'SN-TEST-0001',
+            'kode_barang' => 'BRG-TEST-0001',
             // Borrower is linked to the real user and the name is snapshotted.
             'borrower_id' => $borrower->id,
             'borrower_name' => 'Andi Peminjam',
@@ -113,6 +114,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $user->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => 'Andi',
             'borrow_date' => '2026-06-01',
@@ -143,6 +145,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $user->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => 'Andi',
             'borrow_date' => '2026-06-01',
@@ -165,6 +168,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $borrower->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => $borrower->name,
             'borrow_date' => '2026-06-01',
@@ -199,6 +203,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $borrower->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => $borrower->name,
             'borrow_date' => '2026-06-01',
@@ -218,6 +223,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $user->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => $user->name,
             'borrow_date' => '2026-06-01',
@@ -243,6 +249,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $user->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => $user->name,
             'borrow_date' => '2026-06-01',
@@ -267,6 +274,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $user->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => $user->name,
             'borrow_date' => '2026-06-01',
@@ -291,6 +299,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $user->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => $user->name,
             'borrow_date' => '2026-06-01',
@@ -313,6 +322,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'borrower_id' => $staff->id,
             'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'borrower_name' => $staff->name,
             'borrow_date' => '2026-06-01',
@@ -334,6 +344,7 @@ class BorrowReturnTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $payload = [
+            'kode_barang' => 'BRG-NEW-9999',
             'serial_number' => 'SN-NEW-9999',
             'item_name' => 'New Mouse',
             'brand_name' => 'Logitech',
@@ -342,11 +353,11 @@ class BorrowReturnTest extends TestCase
         ];
 
         $this->actingAs($staff)->post(route('items.store'), $payload)->assertForbidden();
-        $this->assertDatabaseMissing('items', ['serial_number' => 'SN-NEW-9999']);
+        $this->assertDatabaseMissing('items', ['kode_barang' => 'BRG-NEW-9999']);
 
         $this->actingAs($admin)->post(route('items.store'), $payload)
             ->assertRedirect(route('items.index'));
-        $this->assertDatabaseHas('items', ['serial_number' => 'SN-NEW-9999']);
+        $this->assertDatabaseHas('items', ['kode_barang' => 'BRG-NEW-9999']);
     }
 
     public function test_admin_can_update_the_item_image_replacing_the_old_file(): void
@@ -358,6 +369,7 @@ class BorrowReturnTest extends TestCase
         $item = $this->item(['item_image' => $old]);
 
         $this->actingAs($admin)->patch(route('items.update', $item), [
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'item_name' => $item->item_name,
             'brand_name' => $item->brand_name,
@@ -383,6 +395,7 @@ class BorrowReturnTest extends TestCase
         $item = $this->item(['item_image' => $existing]);
 
         $this->actingAs($admin)->patch(route('items.update', $item), [
+            'kode_barang' => $item->kode_barang,
             'serial_number' => $item->serial_number,
             'item_name' => 'Renamed',
             'brand_name' => $item->brand_name,

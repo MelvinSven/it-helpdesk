@@ -186,7 +186,7 @@ function BorrowedItemsTable({
                 <thead>
                     <tr className="text-left text-xs uppercase text-gray-500">
                         <th className="py-2 pr-4">Nama Barang</th>
-                        <th className="py-2 pr-4">Nomor</th>
+                        <th className="py-2 pr-4">Kode Barang</th>
                         {showBorrower && (
                             <th className="py-2 pr-4">Peminjam</th>
                         )}
@@ -202,7 +202,7 @@ function BorrowedItemsTable({
                                 {b.item_name}
                             </td>
                             <td className="py-2 pr-4 font-mono text-xs text-gray-600">
-                                {b.serial_number}
+                                {b.kode_barang}
                             </td>
                             {showBorrower && (
                                 <td className="py-2 pr-4 text-gray-600">

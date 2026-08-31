@@ -88,15 +88,15 @@ class DatabaseSeeder extends Seeder
         );
 
         $items = [
-            ['serial_number' => 'SN-LAP-0001', 'item_name' => 'ThinkPad X1 Carbon', 'brand_name' => 'Lenovo', 'mac_address' => '00:1A:2B:3C:4D:5E', 'type' => 'Laptop', 'condition' => Item::CONDITION_GOOD],
-            ['serial_number' => 'SN-MON-0002', 'item_name' => 'UltraSharp U2723QE', 'brand_name' => 'Dell', 'mac_address' => null, 'type' => 'Monitor', 'condition' => Item::CONDITION_NEW],
-            ['serial_number' => 'SN-RTR-0003', 'item_name' => 'Archer AX73', 'brand_name' => 'TP-Link', 'mac_address' => 'A4:B1:C2:D3:E4:F5', 'type' => 'Router', 'condition' => Item::CONDITION_GOOD],
-            ['serial_number' => 'SN-PRJ-0004', 'item_name' => 'EB-X06 Projector', 'brand_name' => 'Epson', 'mac_address' => null, 'type' => 'Proyektor', 'condition' => Item::CONDITION_MINOR_DAMAGE],
+            ['kode_barang' => 'BRG-LAP-0001', 'serial_number' => 'SN-LAP-0001', 'item_name' => 'ThinkPad X1 Carbon', 'brand_name' => 'Lenovo', 'mac_address' => '00:1A:2B:3C:4D:5E', 'type' => 'Laptop', 'condition' => Item::CONDITION_GOOD],
+            ['kode_barang' => 'BRG-MON-0002', 'serial_number' => 'SN-MON-0002', 'item_name' => 'UltraSharp U2723QE', 'brand_name' => 'Dell', 'mac_address' => null, 'type' => 'Monitor', 'condition' => Item::CONDITION_NEW],
+            ['kode_barang' => 'BRG-RTR-0003', 'serial_number' => 'SN-RTR-0003', 'item_name' => 'Archer AX73', 'brand_name' => 'TP-Link', 'mac_address' => 'A4:B1:C2:D3:E4:F5', 'type' => 'Router', 'condition' => Item::CONDITION_GOOD],
+            ['kode_barang' => 'BRG-PRJ-0004', 'serial_number' => 'SN-PRJ-0004', 'item_name' => 'EB-X06 Projector', 'brand_name' => 'Epson', 'mac_address' => null, 'type' => 'Proyektor', 'condition' => Item::CONDITION_MINOR_DAMAGE],
         ];
 
         foreach ($items as $item) {
             Item::firstOrCreate(
-                ['serial_number' => $item['serial_number']],
+                ['kode_barang' => $item['kode_barang']],
                 [...$item, 'status' => Item::STATUS_AVAILABLE],
             );
         }

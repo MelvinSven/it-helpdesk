@@ -9,7 +9,7 @@ import { FormEventHandler } from 'react';
 interface ReturnTarget {
     id: number;
     item_name: string;
-    serial_number: string;
+    kode_barang: string;
     borrower_name: string;
 }
 
@@ -80,12 +80,12 @@ export default function Return({
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <InputLabel
-                                htmlFor="serial_number"
-                                value="Nomor"
+                                htmlFor="kode_barang"
+                                value="Kode Barang"
                             />
                             <TextInput
-                                id="serial_number"
-                                value={borrow.serial_number}
+                                id="kode_barang"
+                                value={borrow.kode_barang}
                                 className="mt-1 block w-full bg-gray-50 font-mono"
                                 readOnly
                             />

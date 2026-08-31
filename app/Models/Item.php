@@ -36,6 +36,7 @@ class Item extends Model
     ];
 
     protected $fillable = [
+        'kode_barang',
         'serial_number',
         'item_name',
         'brand_name',

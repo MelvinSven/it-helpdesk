@@ -299,8 +299,12 @@ export default function Show({
                         </div>
                         <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                             <Field
-                                label="Nomor"
-                                value={item.serial_number}
+                                label="Kode Barang"
+                                value={item.kode_barang}
+                            />
+                            <Field
+                                label="Nomor Seri"
+                                value={item.serial_number || '—'}
                             />
                             <Field label="Merek" value={item.brand_name} />
                             <Field label="Tipe" value={item.type} />
