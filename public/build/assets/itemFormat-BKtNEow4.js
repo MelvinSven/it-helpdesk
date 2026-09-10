@@ -1,0 +1,1 @@
+const e="LIX-EL-",r=/^LIX-EL-[A-Z0-9]+-[A-Z0-9]+$/;function c(t){let s=t.toUpperCase();for(;s.startsWith(e);)s=s.slice(e.length);const a=s.replace(/[^A-Z0-9]+/g,"-").replace(/^-/,""),n=a.indexOf("-");return n===-1?e+a:`${e}${a.slice(0,n)}-${a.slice(n+1).replace(/-/g,"")}`}function l(t){return t.startsWith(e)?t.slice(e.length):t}export{r as K,e as a,c as f,l as k};
