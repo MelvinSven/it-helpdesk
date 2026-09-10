@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UserImportController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ItemExportController;
 use App\Http\Controllers\ItemImportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProcurementRequestController;
@@ -43,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/items', [ItemController::class, 'store'])->name('items.store');
     Route::post('/items/import', [ItemImportController::class, 'store'])->name('items.import');
     Route::get('/items/import/template', [ItemImportController::class, 'template'])->name('items.import.template');
+    Route::get('/items/export', ItemExportController::class)->name('items.export');
     Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
     Route::get('/items/{item}/edit', [ItemController::class, 'edit'])->name('items.edit');
     Route::patch('/items/{item}', [ItemController::class, 'update'])->name('items.update');

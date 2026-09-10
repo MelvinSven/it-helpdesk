@@ -154,6 +154,16 @@ export default function Index({ items, filters, can }: Props) {
                 <div className="flex items-center gap-2">
                     {can.manage && (
                         <>
+                            <a
+                                href={`${route('items.export')}?${new URLSearchParams(
+                                    Object.entries(form).filter(
+                                        ([, v]) => v !== '' && v != null,
+                                    ) as [string, string][],
+                                ).toString()}`}
+                                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            >
+                                Ekspor PDF
+                            </a>
                             <button
                                 type="button"
                                 onClick={() => setShowImport(true)}
