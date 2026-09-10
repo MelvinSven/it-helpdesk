@@ -96,8 +96,10 @@ class ItemController extends Controller
     {
         $this->authorize('create', Item::class);
 
+        $this->normalizeInput($request, formatKode: true);
+
         $validated = $request->validate([
-            'kode_barang' => ['required', 'string', 'max:100', 'unique:items,kode_barang'],
+            'kode_barang' => ['required', 'string', 'max:100', 'regex:'.Item::KODE_PATTERN, 'unique:items,kode_barang'],
             'serial_number' => ['nullable', 'string', 'max:100'],
             'item_name' => ['required', 'string', 'max:255'],
             'brand_name' => ['required', 'string', 'max:255'],
@@ -145,9 +147,11 @@ class ItemController extends Controller
     {
         $this->authorize('update', $item);
 
+        $this->normalizeInput($request, formatKode: false);
+
         // Status is driven by borrow/return, so it stays out of the edit form.
         $validated = $request->validate([
-            'kode_barang' => ['required', 'string', 'max:100', Rule::unique('items', 'kode_barang')->ignore($item->id)],
+            'kode_barang' => ['required', 'string', 'max:100', 'regex:'.Item::KODE_PATTERN, Rule::unique('items', 'kode_barang')->ignore($item->id)],
             'serial_number' => ['nullable', 'string', 'max:100'],
             'item_name' => ['required', 'string', 'max:255'],
             'brand_name' => ['required', 'string', 'max:255'],
@@ -263,5 +267,28 @@ class ItemController extends Controller
         $item->delete();
 
         return redirect()->route('items.index')->with('success', "Barang {$name} berhasil dihapus.");
+    }
+
+    /**
+     * Uppercases the name fields and Kode Barang before validation so the
+     * unique check sees the stored form. Only a new item gets the LIX-EL-
+     * formatting: on update a legacy code fails validation visibly instead of
+     * being silently renamed, since borrow records keep a snapshot of it.
+     */
+    private function normalizeInput(Request $request, bool $formatKode): void
+    {
+        $normalized = [];
+
+        foreach (['kode_barang', 'item_name', 'brand_name', 'type'] as $field) {
+            if (is_string($value = $request->input($field))) {
+                $normalized[$field] = mb_strtoupper($value);
+            }
+        }
+
+        if ($formatKode && isset($normalized['kode_barang'])) {
+            $normalized['kode_barang'] = Item::formatKodeBarang($normalized['kode_barang']);
+        }
+
+        $request->merge($normalized);
     }
 }

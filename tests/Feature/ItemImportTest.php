@@ -42,8 +42,8 @@ class ItemImportTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $file = $this->excel($this->defaultHeaders(), [
-            ['SN-001', 'Laptop Dell', 'Dell', '00:11:22:33:44:55', 'Laptop', 'Baru'],
-            ['SN-002', 'Monitor LG', 'LG', '', 'Monitor', 'Rusak Ringan'],
+            ['LIX-EL-SN-001', 'Laptop Dell', 'Dell', '00:11:22:33:44:55', 'Laptop', 'Baru'],
+            ['LIX-EL-SN-002', 'Monitor LG', 'LG', '', 'Monitor', 'Rusak Ringan'],
         ]);
 
         $this->actingAs($admin)
@@ -52,7 +52,7 @@ class ItemImportTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('items', [
-            'kode_barang' => 'SN-001',
+            'kode_barang' => 'LIX-EL-SN-001',
             'condition' => Item::CONDITION_NEW,
             'status' => Item::STATUS_AVAILABLE,
             'mac_address' => '00:11:22:33:44:55',
@@ -60,7 +60,7 @@ class ItemImportTest extends TestCase
 
         // "Rusak Ringan" → rusak_ringan; empty MAC stored as null.
         $this->assertDatabaseHas('items', [
-            'kode_barang' => 'SN-002',
+            'kode_barang' => 'LIX-EL-SN-002',
             'condition' => Item::CONDITION_MINOR_DAMAGE,
             'mac_address' => null,
         ]);
@@ -71,8 +71,8 @@ class ItemImportTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $file = $this->excel([...$this->defaultHeaders(), 'Deskripsi'], [
-            ['SN-010', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru', 'Core i7, RAM 16GB, Windows 11'],
-            ['SN-011', 'Mouse', 'Logitech', '', 'Mouse', 'Baik', ''],
+            ['LIX-EL-SN-010', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru', 'Core i7, RAM 16GB, Windows 11'],
+            ['LIX-EL-SN-011', 'Mouse', 'Logitech', '', 'Mouse', 'Baik', ''],
         ]);
 
         $this->actingAs($admin)
@@ -81,13 +81,13 @@ class ItemImportTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('items', [
-            'kode_barang' => 'SN-010',
+            'kode_barang' => 'LIX-EL-SN-010',
             'description' => 'Core i7, RAM 16GB, Windows 11',
         ]);
 
         // Empty cell stored as null.
         $this->assertDatabaseHas('items', [
-            'kode_barang' => 'SN-011',
+            'kode_barang' => 'LIX-EL-SN-011',
             'description' => null,
         ]);
     }
@@ -97,7 +97,7 @@ class ItemImportTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $file = $this->excel($this->defaultHeaders(), [
-            ['SN-012', 'Keyboard', 'Logitech', '', 'Keyboard', 'Baru'],
+            ['LIX-EL-SN-012', 'Keyboard', 'Logitech', '', 'Keyboard', 'Baru'],
         ]);
 
         $this->actingAs($admin)
@@ -106,7 +106,7 @@ class ItemImportTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('items', [
-            'kode_barang' => 'SN-012',
+            'kode_barang' => 'LIX-EL-SN-012',
             'description' => null,
         ]);
     }
@@ -116,16 +116,16 @@ class ItemImportTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $file = $this->excel($this->defaultHeaders(), [
-            ['SN-001', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baik'],
-            ['SN-002', 'Monitor LG', 'LG', '', 'Monitor', 'Hancur'],
+            ['LIX-EL-SN-001', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baik'],
+            ['LIX-EL-SN-002', 'Monitor LG', 'LG', '', 'Monitor', 'Hancur'],
         ]);
 
         $this->actingAs($admin)
             ->post(route('items.import'), ['file' => $file])
             ->assertSessionHas('error');
 
-        $this->assertDatabaseHas('items', ['kode_barang' => 'SN-001']);
-        $this->assertDatabaseMissing('items', ['kode_barang' => 'SN-002']);
+        $this->assertDatabaseHas('items', ['kode_barang' => 'LIX-EL-SN-001']);
+        $this->assertDatabaseMissing('items', ['kode_barang' => 'LIX-EL-SN-002']);
         $this->assertSame(1, Item::count());
     }
 
@@ -134,7 +134,7 @@ class ItemImportTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         Item::create([
-            'kode_barang' => 'SN-EXISTING',
+            'kode_barang' => 'LIX-EL-SN-EXISTING',
             'item_name' => 'Old',
             'brand_name' => 'Acme',
             'type' => 'Laptop',
@@ -143,9 +143,9 @@ class ItemImportTest extends TestCase
         ]);
 
         $file = $this->excel($this->defaultHeaders(), [
-            ['SN-EXISTING', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru'],
-            ['SN-DUP', 'Monitor LG', 'LG', '', 'Monitor', 'Baik'],
-            ['SN-DUP', 'Monitor LG 2', 'LG', '', 'Monitor', 'Baik'],
+            ['LIX-EL-SN-EXISTING', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru'],
+            ['LIX-EL-SN-DUP', 'Monitor LG', 'LG', '', 'Monitor', 'Baik'],
+            ['LIX-EL-SN-DUP', 'Monitor LG 2', 'LG', '', 'Monitor', 'Baik'],
         ]);
 
         $this->actingAs($admin)
@@ -153,9 +153,9 @@ class ItemImportTest extends TestCase
             ->assertSessionHas('error');
 
         // Existing code untouched, in-file duplicate imported once.
-        $this->assertSame(1, Item::where('kode_barang', 'SN-EXISTING')->count());
-        $this->assertSame(1, Item::where('kode_barang', 'SN-DUP')->count());
-        $this->assertSame('Old', Item::where('kode_barang', 'SN-EXISTING')->value('item_name'));
+        $this->assertSame(1, Item::where('kode_barang', 'LIX-EL-SN-EXISTING')->count());
+        $this->assertSame(1, Item::where('kode_barang', 'LIX-EL-SN-DUP')->count());
+        $this->assertSame('Old', Item::where('kode_barang', 'LIX-EL-SN-EXISTING')->value('item_name'));
     }
 
     public function test_missing_required_header_is_rejected(): void
@@ -163,7 +163,7 @@ class ItemImportTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $file = $this->excel(['Kode Barang', 'Nama Barang', 'Merek', 'Tipe'], [
-            ['SN-001', 'Laptop', 'Dell', 'Laptop'],
+            ['LIX-EL-SN-001', 'Laptop', 'Dell', 'Laptop'],
         ]);
 
         $this->actingAs($admin)
@@ -180,8 +180,8 @@ class ItemImportTest extends TestCase
         $file = $this->excel(
             ['Kode Barang', 'Nomor Seri', 'Nama Barang', 'Merek', 'MAC Address', 'Tipe', 'Kondisi'],
             [
-                ['BRG-020', 'SN-020', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru'],
-                ['BRG-021', '', 'Mouse', 'Logitech', '', 'Mouse', 'Baik'],
+                ['LIX-EL-BRG-020', 'SN-020', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru'],
+                ['LIX-EL-BRG-021', '', 'Mouse', 'Logitech', '', 'Mouse', 'Baik'],
             ],
         );
 
@@ -191,13 +191,13 @@ class ItemImportTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('items', [
-            'kode_barang' => 'BRG-020',
+            'kode_barang' => 'LIX-EL-BRG-020',
             'serial_number' => 'SN-020',
         ]);
 
         // Blank serial stored as null rather than skipping the row.
         $this->assertDatabaseHas('items', [
-            'kode_barang' => 'BRG-021',
+            'kode_barang' => 'LIX-EL-BRG-021',
             'serial_number' => null,
         ]);
     }
@@ -207,7 +207,7 @@ class ItemImportTest extends TestCase
         $staff = User::factory()->create(['role' => User::ROLE_STAFF]);
 
         $file = $this->excel($this->defaultHeaders(), [
-            ['SN-001', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru'],
+            ['LIX-EL-SN-001', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru'],
         ]);
 
         $this->actingAs($staff)
@@ -215,5 +215,44 @@ class ItemImportTest extends TestCase
             ->assertForbidden();
 
         $this->assertSame(0, Item::count());
+    }
+
+    public function test_import_uppercases_code_and_name_fields(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $file = $this->excel($this->defaultHeaders(), [
+            ['lix-el-lpt-030', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru'],
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('items.import'), ['file' => $file])
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('items', [
+            'kode_barang' => 'LIX-EL-LPT-030',
+            'item_name' => 'LAPTOP DELL',
+            'brand_name' => 'DELL',
+            'type' => 'LAPTOP',
+        ]);
+    }
+
+    public function test_rows_with_a_non_conforming_code_are_skipped(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $file = $this->excel($this->defaultHeaders(), [
+            ['LIX-EL-LPT-040', 'Laptop Dell', 'Dell', '', 'Laptop', 'Baru'],
+            ['SN-041', 'Monitor LG', 'LG', '', 'Monitor', 'Baik'],
+            ['LIX-EL-MON', 'Monitor LG', 'LG', '', 'Monitor', 'Baik'],
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('items.import'), ['file' => $file])
+            ->assertSessionHas('error');
+
+        // Not auto-prefixed: SN-041 is skipped, not stored as LIX-EL-SN-041.
+        $this->assertSame(1, Item::count());
+        $this->assertDatabaseHas('items', ['kode_barang' => 'LIX-EL-LPT-040']);
     }
 }

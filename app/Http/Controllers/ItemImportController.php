@@ -44,7 +44,7 @@ class ItemImportController extends Controller
             'A1',
         );
         $sheet->fromArray(
-            ['BRG-001', 'SN-001', 'Laptop Dell', 'Dell', '00:1A:2B:3C:4D:5E', 'Laptop', 'Baru', 'Core i7, RAM 16GB, Windows 11'],
+            ['LIX-EL-LAPTOP-001', 'SN-001', 'LAPTOP DELL', 'DELL', '00:1A:2B:3C:4D:5E', 'LAPTOP', 'Baru', 'Core i7, RAM 16GB, Windows 11'],
             null,
             'A2',
         );
@@ -99,11 +99,12 @@ class ItemImportController extends Controller
         foreach (array_slice($rows, 1) as $offset => $row) {
             $line = $offset + 2; // 1-based, +1 for the header row
 
-            $code = trim((string) ($row[$colMap['kode_barang']] ?? ''));
+            // Codes and name fields are stored uppercase, same as the item form.
+            $code = mb_strtoupper(trim((string) ($row[$colMap['kode_barang']] ?? '')));
             $serial = isset($colMap['serial_number']) ? trim((string) ($row[$colMap['serial_number']] ?? '')) : '';
-            $name = trim((string) ($row[$colMap['item_name']] ?? ''));
-            $brand = trim((string) ($row[$colMap['brand_name']] ?? ''));
-            $type = trim((string) ($row[$colMap['type']] ?? ''));
+            $name = mb_strtoupper(trim((string) ($row[$colMap['item_name']] ?? '')));
+            $brand = mb_strtoupper(trim((string) ($row[$colMap['brand_name']] ?? '')));
+            $type = mb_strtoupper(trim((string) ($row[$colMap['type']] ?? '')));
             $mac = isset($colMap['mac_address']) ? trim((string) ($row[$colMap['mac_address']] ?? '')) : '';
             $description = isset($colMap['description']) ? trim((string) ($row[$colMap['description']] ?? '')) : '';
 
@@ -119,6 +120,14 @@ class ItemImportController extends Controller
 
             if ($code === '' || $name === '' || $brand === '' || $type === '') {
                 $skipped[] = "Baris {$line}: Kode Barang, Nama Barang, Merek, atau Tipe kosong.";
+
+                continue;
+            }
+
+            // Unlike the form, import doesn't auto-prefix: a code in another
+            // format is more likely the wrong column than a new-style code.
+            if (! preg_match(Item::KODE_PATTERN, $code)) {
+                $skipped[] = "Baris {$line} ({$code}): Kode Barang harus berformat LIX-EL-XXX-XXX.";
 
                 continue;
             }

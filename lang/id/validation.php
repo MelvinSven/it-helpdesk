@@ -119,6 +119,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'kode_barang' => [
+            'regex' => 'Kode Barang harus berformat LIX-EL-XXX-XXX, mis. LIX-EL-LAPTOP-001.',
+        ],
     ],
 
     'attributes' => [

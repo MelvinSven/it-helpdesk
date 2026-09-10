@@ -35,6 +35,11 @@ class Item extends Model
         self::CONDITION_MAJOR_DAMAGE,
     ];
 
+    public const KODE_PREFIX = 'LIX-EL-';
+
+    /** LIX-EL-<SEGMENT>-<SEGMENT>, each segment uppercase letters/digits. */
+    public const KODE_PATTERN = '/^LIX-EL-[A-Z0-9]+-[A-Z0-9]+$/';
+
     protected $fillable = [
         'kode_barang',
         'serial_number',
@@ -66,5 +71,32 @@ class Item extends Model
     public function isAvailable(): bool
     {
         return $this->status === self::STATUS_AVAILABLE;
+    }
+
+    /**
+     * Builds a full Kode Barang from free-typed input: uppercases, turns any
+     * run of spaces/punctuation into a single dash, and caps it at two
+     * segments ("laptop 12" → "LIX-EL-LAPTOP-12"). Same rules as
+     * formatKodeBarang() in resources/js/lib/itemFormat.ts.
+     */
+    public static function formatKodeBarang(string $value): string
+    {
+        $rest = mb_strtoupper($value);
+
+        // A bare or truncated prefix ("LIX-EL") carries no segments; don't let
+        // it round-trip into the valid-looking "LIX-EL-LIX-EL".
+        if (str_starts_with(self::KODE_PREFIX, $rest)) {
+            return self::KODE_PREFIX;
+        }
+
+        while (str_starts_with($rest, self::KODE_PREFIX)) {
+            $rest = substr($rest, strlen(self::KODE_PREFIX));
+        }
+
+        $cleaned = ltrim(preg_replace('/[^A-Z0-9]+/', '-', $rest), '-');
+        $parts = explode('-', $cleaned, 2);
+
+        return self::KODE_PREFIX.$parts[0]
+            .(isset($parts[1]) ? '-'.str_replace('-', '', $parts[1]) : '');
     }
 }

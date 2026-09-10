@@ -18,7 +18,7 @@ class BorrowReturnTest extends TestCase
     private function item(array $overrides = []): Item
     {
         return Item::create(array_merge([
-            'kode_barang' => 'BRG-TEST-0001',
+            'kode_barang' => 'LIX-EL-TEST-0001',
             'serial_number' => 'SN-TEST-0001',
             'item_name' => 'Test Laptop',
             'brand_name' => 'Acme',
@@ -48,7 +48,7 @@ class BorrowReturnTest extends TestCase
         $this->assertDatabaseHas('borrow_records', [
             'item_id' => $item->id,
             'item_name' => 'Test Laptop',
-            'kode_barang' => 'BRG-TEST-0001',
+            'kode_barang' => 'LIX-EL-TEST-0001',
             // Borrower is linked to the real user and the name is snapshotted.
             'borrower_id' => $borrower->id,
             'borrower_name' => 'Andi Peminjam',
@@ -344,7 +344,7 @@ class BorrowReturnTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $payload = [
-            'kode_barang' => 'BRG-NEW-9999',
+            'kode_barang' => 'LIX-EL-NEW-9999',
             'serial_number' => 'SN-NEW-9999',
             'item_name' => 'New Mouse',
             'brand_name' => 'Logitech',
@@ -353,11 +353,11 @@ class BorrowReturnTest extends TestCase
         ];
 
         $this->actingAs($staff)->post(route('items.store'), $payload)->assertForbidden();
-        $this->assertDatabaseMissing('items', ['kode_barang' => 'BRG-NEW-9999']);
+        $this->assertDatabaseMissing('items', ['kode_barang' => 'LIX-EL-NEW-9999']);
 
         $this->actingAs($admin)->post(route('items.store'), $payload)
             ->assertRedirect(route('items.index'));
-        $this->assertDatabaseHas('items', ['kode_barang' => 'BRG-NEW-9999']);
+        $this->assertDatabaseHas('items', ['kode_barang' => 'LIX-EL-NEW-9999']);
     }
 
     public function test_admin_can_update_the_item_image_replacing_the_old_file(): void
@@ -405,7 +405,7 @@ class BorrowReturnTest extends TestCase
         ])->assertRedirect(route('items.index'));
 
         $item = $item->fresh();
-        $this->assertEquals('Renamed', $item->item_name);
+        $this->assertEquals('RENAMED', $item->item_name);
         $this->assertEquals($existing, $item->item_image);
         Storage::disk('public')->assertExists($existing);
     }

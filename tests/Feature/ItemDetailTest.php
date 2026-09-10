@@ -201,7 +201,7 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
-            'kode_barang' => 'BRG-IMG-001',
+            'kode_barang' => 'LIX-EL-IMG-001',
             'item_name' => 'Laptop',
             'brand_name' => 'Acme',
             'type' => 'Laptop',
@@ -213,7 +213,7 @@ class ItemDetailTest extends TestCase
             ],
         ])->assertRedirect(route('items.index'));
 
-        $item = Item::where('kode_barang', 'BRG-IMG-001')->firstOrFail();
+        $item = Item::where('kode_barang', 'LIX-EL-IMG-001')->firstOrFail();
 
         // First upload is the main image, the rest fall through to the gallery.
         $this->assertNotNull($item->item_image);
@@ -231,14 +231,14 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
-            'kode_barang' => 'BRG-IMG-002',
+            'kode_barang' => 'LIX-EL-IMG-002',
             'item_name' => 'Mouse',
             'brand_name' => 'Acme',
             'type' => 'Mouse',
             'condition' => Item::CONDITION_GOOD,
         ])->assertRedirect(route('items.index'));
 
-        $item = Item::where('kode_barang', 'BRG-IMG-002')->firstOrFail();
+        $item = Item::where('kode_barang', 'LIX-EL-IMG-002')->firstOrFail();
         $this->assertNull($item->item_image);
         $this->assertCount(0, $item->images);
     }
@@ -249,7 +249,7 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
-            'kode_barang' => 'BRG-IMG-003',
+            'kode_barang' => 'LIX-EL-IMG-003',
             'item_name' => 'Monitor',
             'brand_name' => 'Acme',
             'type' => 'Monitor',
@@ -259,7 +259,7 @@ class ItemDetailTest extends TestCase
         ])->assertRedirect(route('items.index'));
 
         $this->assertNotNull(
-            Item::where('kode_barang', 'BRG-IMG-003')->firstOrFail()->item_image,
+            Item::where('kode_barang', 'LIX-EL-IMG-003')->firstOrFail()->item_image,
         );
     }
 
@@ -269,7 +269,7 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
-            'kode_barang' => 'BRG-IMG-004',
+            'kode_barang' => 'LIX-EL-IMG-004',
             'item_name' => 'Monitor',
             'brand_name' => 'Acme',
             'type' => 'Monitor',
@@ -277,7 +277,7 @@ class ItemDetailTest extends TestCase
             'images' => [UploadedFile::fake()->image('huge.jpg')->size(20481)],
         ])->assertSessionHasErrors('images.0');
 
-        $this->assertDatabaseMissing('items', ['kode_barang' => 'BRG-IMG-004']);
+        $this->assertDatabaseMissing('items', ['kode_barang' => 'LIX-EL-IMG-004']);
     }
 
     public function test_creating_an_item_rejects_a_non_image_upload(): void
@@ -286,7 +286,7 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
-            'kode_barang' => 'BRG-IMG-005',
+            'kode_barang' => 'LIX-EL-IMG-005',
             'item_name' => 'Monitor',
             'brand_name' => 'Acme',
             'type' => 'Monitor',
@@ -294,7 +294,7 @@ class ItemDetailTest extends TestCase
             'images' => [UploadedFile::fake()->create('doc.pdf', 100, 'application/pdf')],
         ])->assertSessionHasErrors('images.0');
 
-        $this->assertDatabaseMissing('items', ['kode_barang' => 'BRG-IMG-005']);
+        $this->assertDatabaseMissing('items', ['kode_barang' => 'LIX-EL-IMG-005']);
     }
 
     public function test_first_uploaded_image_becomes_the_main_image_and_the_rest_the_gallery(): void
@@ -424,7 +424,7 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
-            'kode_barang' => 'BRG-DESC-001',
+            'kode_barang' => 'LIX-EL-DESC-001',
             'serial_number' => 'SN-DESC-001',
             'item_name' => 'Laptop',
             'brand_name' => 'Acme',
@@ -456,7 +456,7 @@ class ItemDetailTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->post(route('items.store'), [
-            'kode_barang' => 'BRG-DESC-002',
+            'kode_barang' => 'LIX-EL-DESC-002',
             'serial_number' => 'SN-DESC-002',
             'item_name' => 'Mouse',
             'brand_name' => 'Acme',

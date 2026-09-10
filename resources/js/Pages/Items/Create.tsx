@@ -4,6 +4,11 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, useForm } from '@inertiajs/react';
+import {
+    KODE_BARANG_PREFIX,
+    formatKodeBarang,
+    kodeBarangSegments,
+} from '@/lib/itemFormat';
 import { ChangeEventHandler, FormEventHandler, useState } from 'react';
 
 function formatMacAddress(value: string): string {
@@ -29,7 +34,7 @@ export default function Create() {
         description: string;
         images: File[];
     }>({
-        kode_barang: '',
+        kode_barang: KODE_BARANG_PREFIX,
         serial_number: '',
         item_name: '',
         brand_name: '',
@@ -87,15 +92,28 @@ export default function Create() {
                                 htmlFor="kode_barang"
                                 value="Kode Barang"
                             />
-                            <TextInput
-                                id="kode_barang"
-                                value={data.kode_barang}
-                                onChange={(e) =>
-                                    setData('kode_barang', e.target.value)
-                                }
-                                className="mt-1 block w-full"
-                                isFocused
-                            />
+                            <div className="mt-1 flex">
+                                <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 font-mono text-sm text-gray-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                                    {KODE_BARANG_PREFIX}
+                                </span>
+                                <TextInput
+                                    id="kode_barang"
+                                    value={kodeBarangSegments(data.kode_barang)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'kode_barang',
+                                            formatKodeBarang(e.target.value),
+                                        )
+                                    }
+                                    className="block w-full min-w-0 rounded-l-none"
+                                    placeholder="LAPTOP-001"
+                                    isFocused
+                                />
+                            </div>
+                            <p className="mt-1 text-xs text-gray-500">
+                                Spasi atau tanda hubung memisahkan dua bagian
+                                kode.
+                            </p>
                             <InputError
                                 className="mt-2"
                                 message={errors.kode_barang}
@@ -128,7 +146,10 @@ export default function Create() {
                                 id="item_name"
                                 value={data.item_name}
                                 onChange={(e) =>
-                                    setData('item_name', e.target.value)
+                                    setData(
+                                        'item_name',
+                                        e.target.value.toUpperCase(),
+                                    )
                                 }
                                 className="mt-1 block w-full"
                             />
@@ -146,7 +167,10 @@ export default function Create() {
                                 id="brand_name"
                                 value={data.brand_name}
                                 onChange={(e) =>
-                                    setData('brand_name', e.target.value)
+                                    setData(
+                                        'brand_name',
+                                        e.target.value.toUpperCase(),
+                                    )
                                 }
                                 className="mt-1 block w-full"
                             />
@@ -192,7 +216,7 @@ export default function Create() {
                                 id="type"
                                 value={data.type}
                                 onChange={(e) =>
-                                    setData('type', e.target.value)
+                                    setData('type', e.target.value.toUpperCase())
                                 }
                                 className="mt-1 block w-full"
                                 placeholder="Laptop, Monitor, Mouse..."

@@ -350,7 +350,13 @@ export default function Index({ items, filters, can }: Props) {
                             Nilai Kondisi:{' '}
                             <em>Baru</em>, <em>Baik</em>, <em>Rusak Ringan</em>,
                             atau <em>Rusak Berat</em>. Status awal semua barang:{' '}
-                            <strong>Tersedia</strong>.
+                            <strong>Tersedia</strong>. Kode Barang wajib
+                            berformat{' '}
+                            <code className="rounded bg-gray-100 px-1 text-xs">
+                                LIX-EL-XXX-XXX
+                            </code>{' '}
+                            (baris lain dilewati); Nama Barang, Merek, dan Tipe
+                            otomatis diubah ke huruf kapital.
                         </p>
 
                         <div className="mb-4">
