@@ -100,7 +100,6 @@ export default function Index({ borrows, filters, can }: Props) {
                             <th className="px-4 py-3">Nama Barang</th>
                             <th className="px-4 py-3">Peminjam</th>
                             <th className="px-4 py-3">Tgl Pinjam</th>
-                            <th className="px-4 py-3">Kegunaan</th>
                             <th className="px-4 py-3">Foto</th>
                             <th className="px-4 py-3">Status</th>
                             <th className="px-4 py-3">Pengembalian</th>
@@ -111,7 +110,7 @@ export default function Index({ borrows, filters, can }: Props) {
                         {borrows.data.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={9}
+                                    colSpan={8}
                                     className="px-4 py-10 text-center text-sm text-gray-500"
                                 >
                                     Tidak ada data peminjaman.
@@ -131,9 +130,6 @@ export default function Index({ borrows, filters, can }: Props) {
                                     </td>
                                     <td className="px-4 py-3 text-xs text-gray-500">
                                         {fmtDate(b.borrow_date)}
-                                    </td>
-                                    <td className="px-4 py-3 max-w-xs truncate text-gray-600">
-                                        {b.purpose}
                                     </td>
                                     <td className="px-4 py-3">
                                         {b.borrow_image ? (
