@@ -35,7 +35,8 @@ class BorrowController extends Controller
                 $q->where('item_name', 'like', "%{$search}%")
                     ->orWhere('kode_barang', 'like', "%{$search}%")
                     ->orWhere('serial_number', 'like', "%{$search}%")
-                    ->orWhere('borrower_name', 'like', "%{$search}%");
+                    ->orWhere('borrower_name', 'like', "%{$search}%")
+                    ->orWhere('borrower_proyek', 'like', "%{$search}%");
             });
         }
 
@@ -104,6 +105,7 @@ class BorrowController extends Controller
                 'serial_number' => $locked->serial_number,
                 // Snapshot the name so history survives a later rename.
                 'borrower_name' => $borrower->name,
+                'borrower_proyek' => $borrower->proyek,
                 'borrow_date' => $validated['borrow_date'],
                 'purpose' => $validated['purpose'],
                 'borrow_image' => $imagePath,

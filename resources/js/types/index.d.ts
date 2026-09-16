@@ -106,6 +106,7 @@ export interface BorrowRecord {
     kode_barang: string;
     serial_number: string | null;
     borrower_name: string;
+    borrower_proyek: string | null;
     borrow_date: string;
     purpose: string;
     borrow_image: string | null;

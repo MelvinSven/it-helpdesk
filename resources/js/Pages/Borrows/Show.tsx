@@ -117,6 +117,9 @@ export default function Show({
                             </span>
                         </Row>
                         <Row label="Peminjam">{borrow.borrower_name}</Row>
+                        <Row label="Proyek">
+                            {borrow.borrower_proyek || '—'}
+                        </Row>
                         <Row label="Tanggal Pinjam">
                             {fmtDate(borrow.borrow_date)}
                         </Row>

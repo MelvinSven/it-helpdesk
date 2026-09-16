@@ -64,7 +64,7 @@ export default function Index({ borrows, filters, can }: Props) {
                             setForm({ ...form, search: e.target.value })
                         }
                         onKeyDown={(e) => e.key === 'Enter' && apply()}
-                        placeholder="Cari barang, kode barang, peminjam..."
+                        placeholder="Cari barang, kode barang, peminjam, proyek..."
                         className="rounded-md border-gray-300 text-sm focus:border-brand-500 focus:ring-brand-500"
                     />
                     <select
@@ -99,6 +99,7 @@ export default function Index({ borrows, filters, can }: Props) {
                             <th className="px-4 py-3">Kode Barang</th>
                             <th className="px-4 py-3">Nama Barang</th>
                             <th className="px-4 py-3">Peminjam</th>
+                            <th className="px-4 py-3">Proyek</th>
                             <th className="px-4 py-3">Tgl Pinjam</th>
                             <th className="px-4 py-3">Foto</th>
                             <th className="px-4 py-3">Status</th>
@@ -110,7 +111,7 @@ export default function Index({ borrows, filters, can }: Props) {
                         {borrows.data.length === 0 ? (
                             <tr>
                                 <td
-                                    colSpan={8}
+                                    colSpan={9}
                                     className="px-4 py-10 text-center text-sm text-gray-500"
                                 >
                                     Tidak ada data peminjaman.
@@ -127,6 +128,9 @@ export default function Index({ borrows, filters, can }: Props) {
                                     </td>
                                     <td className="px-4 py-3 text-gray-600">
                                         {b.borrower_name}
+                                    </td>
+                                    <td className="px-4 py-3 text-gray-600">
+                                        {b.borrower_proyek || '—'}
                                     </td>
                                     <td className="px-4 py-3 text-xs text-gray-500">
                                         {fmtDate(b.borrow_date)}
