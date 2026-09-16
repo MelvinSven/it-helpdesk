@@ -6,7 +6,8 @@ import { useState } from 'react';
 
 interface Props {
     borrows: Paginated<BorrowRecord>;
-    filters: { status?: string; search?: string };
+    filters: { status?: string; search?: string; proyek?: string };
+    projects?: string[];
     can: { delete: boolean };
 }
 
@@ -20,10 +21,16 @@ const conditionLabel: Record<ItemCondition, string> = {
 const fmtDate = (d: string | null) =>
     d ? new Date(d).toLocaleDateString('id-ID') : '—';
 
-export default function Index({ borrows, filters, can }: Props) {
+export default function Index({
+    borrows,
+    filters,
+    projects = [],
+    can,
+}: Props) {
     const [form, setForm] = useState({
         search: filters.search ?? '',
         status: filters.status ?? 'all',
+        proyek: filters.proyek ?? 'all',
     });
 
     const apply = (next = form) => {
@@ -79,6 +86,23 @@ export default function Index({ borrows, filters, can }: Props) {
                         <option value="all">Semua</option>
                         <option value="borrowed">Sedang Dipinjam</option>
                         <option value="returned">Sudah Dikembalikan</option>
+                    </select>
+                    <select
+                        value={form.proyek}
+                        onChange={(e) => {
+                            const next = { ...form, proyek: e.target.value };
+                            setForm(next);
+                            apply(next);
+                        }}
+                        className="rounded-md border-gray-300 text-sm"
+                    >
+                        <option value="all">Semua Proyek</option>
+                        <option value="none">Tanpa Proyek</option>
+                        {projects.map((p) => (
+                            <option key={p} value={p}>
+                                {p}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 

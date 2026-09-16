@@ -30,6 +30,15 @@ class BorrowController extends Controller
             $query->where('status', $status);
         }
 
+        $proyek = $request->string('proyek')->toString() ?: 'all';
+        if ($proyek === 'none') {
+            $query->where(function ($q) {
+                $q->whereNull('borrower_proyek')->orWhere('borrower_proyek', '');
+            });
+        } elseif ($proyek !== 'all') {
+            $query->where('borrower_proyek', $proyek);
+        }
+
         if ($search = $request->string('search')->toString()) {
             $query->where(function ($q) use ($search) {
                 $q->where('item_name', 'like', "%{$search}%")
@@ -40,9 +49,31 @@ class BorrowController extends Controller
             });
         }
 
+        $projects = BorrowRecord::query()
+            ->whereNotNull('borrower_proyek')
+            ->where('borrower_proyek', '!=', '')
+            ->distinct()
+            ->pluck('borrower_proyek')
+            ->merge(
+                User::query()
+                    ->whereNotNull('proyek')
+                    ->where('proyek', '!=', '')
+                    ->distinct()
+                    ->pluck('proyek')
+            )
+            ->filter()
+            ->unique()
+            ->sortBy(fn (string $p) => strtolower($p))
+            ->values();
+
         return Inertia::render('Borrows/Index', [
             'borrows' => $query->latest()->paginate(15)->withQueryString(),
-            'filters' => ['status' => $status, 'search' => $request->string('search')->toString()],
+            'filters' => [
+                'status' => $status,
+                'proyek' => $proyek,
+                'search' => $request->string('search')->toString(),
+            ],
+            'projects' => $projects,
             'can' => ['delete' => $request->user()->isAdmin()],
         ]);
     }

@@ -35,11 +35,14 @@ class BorrowReturnTest extends TestCase
         $borrower = User::factory()->create(['name' => 'Andi Peminjam']);
         $item = $this->item();
 
+        Storage::fake('public');
+
         $response = $this->actingAs($user)->post(route('borrows.store'), [
             'item_id' => $item->id,
             'borrower_id' => $borrower->id,
             'borrow_date' => '2026-06-02',
             'purpose' => 'Presentasi klien',
+            'borrow_image' => UploadedFile::fake()->image('borrow.jpg'),
         ]);
 
         $response->assertRedirect(route('borrows.index'));
@@ -122,10 +125,12 @@ class BorrowReturnTest extends TestCase
             'status' => BorrowRecord::STATUS_BORROWED,
         ]);
 
+        Storage::fake('public');
         $this->actingAs($user)->patch(route('borrows.return.store', $record), [
             'return_date' => '2026-06-02',
             'return_condition' => Item::CONDITION_MINOR_DAMAGE,
             'notes' => 'Lecet di sudut.',
+            'return_image' => UploadedFile::fake()->image('return.jpg'),
         ])->assertRedirect(route('borrows.index'));
 
         $item = $item->fresh();
@@ -185,10 +190,12 @@ class BorrowReturnTest extends TestCase
         $this->assertEquals(Item::STATUS_BORROWED, $item->fresh()->status);
         $this->assertEquals(BorrowRecord::STATUS_BORROWED, $record->fresh()->status);
 
+        Storage::fake('public');
         // The borrower succeeds.
         $this->actingAs($borrower)->patch(route('borrows.return.store', $record), [
             'return_date' => '2026-06-02',
             'return_condition' => Item::CONDITION_GOOD,
+            'return_image' => UploadedFile::fake()->image('return.jpg'),
         ])->assertRedirect(route('borrows.index'));
 
         $this->assertEquals(BorrowRecord::STATUS_RETURNED, $record->fresh()->status);
@@ -421,5 +428,116 @@ class BorrowReturnTest extends TestCase
             $user = User::factory()->create(['role' => $role]);
             $this->actingAs($user)->get(route('items.index'))->assertForbidden();
         }
+    }
+
+    public function test_borrows_can_be_filtered_by_specific_project(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $itemA = $this->item(['kode_barang' => 'LIX-A-0001']);
+        $itemB = $this->item(['kode_barang' => 'LIX-B-0002']);
+
+        BorrowRecord::create([
+            'item_id' => $itemA->id,
+            'borrower_id' => $admin->id,
+            'item_name' => $itemA->item_name,
+            'kode_barang' => $itemA->kode_barang,
+            'serial_number' => $itemA->serial_number,
+            'borrower_name' => $admin->name,
+            'borrower_proyek' => 'ECOGREEN',
+            'borrow_date' => '2026-06-01',
+            'purpose' => 'Test ECOGREEN',
+            'status' => BorrowRecord::STATUS_BORROWED,
+        ]);
+
+        BorrowRecord::create([
+            'item_id' => $itemB->id,
+            'borrower_id' => $admin->id,
+            'item_name' => $itemB->item_name,
+            'kode_barang' => $itemB->kode_barang,
+            'serial_number' => $itemB->serial_number,
+            'borrower_name' => $admin->name,
+            'borrower_proyek' => 'UIB',
+            'borrow_date' => '2026-06-01',
+            'purpose' => 'Test UIB',
+            'status' => BorrowRecord::STATUS_BORROWED,
+        ]);
+
+        $this->actingAs($admin)->get(route('borrows.index', ['proyek' => 'ECOGREEN']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Borrows/Index')
+                ->has('borrows.data', 1)
+                ->where('borrows.data.0.borrower_proyek', 'ECOGREEN')
+                ->where('filters.proyek', 'ECOGREEN')
+            );
+    }
+
+    public function test_borrows_can_be_filtered_by_unassigned_project(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $itemA = $this->item(['kode_barang' => 'LIX-A-0001']);
+        $itemB = $this->item(['kode_barang' => 'LIX-B-0002']);
+
+        BorrowRecord::create([
+            'item_id' => $itemA->id,
+            'borrower_id' => $admin->id,
+            'item_name' => $itemA->item_name,
+            'kode_barang' => $itemA->kode_barang,
+            'serial_number' => $itemA->serial_number,
+            'borrower_name' => $admin->name,
+            'borrower_proyek' => null,
+            'borrow_date' => '2026-06-01',
+            'purpose' => 'Test Tanpa Proyek',
+            'status' => BorrowRecord::STATUS_BORROWED,
+        ]);
+
+        BorrowRecord::create([
+            'item_id' => $itemB->id,
+            'borrower_id' => $admin->id,
+            'item_name' => $itemB->item_name,
+            'kode_barang' => $itemB->kode_barang,
+            'serial_number' => $itemB->serial_number,
+            'borrower_name' => $admin->name,
+            'borrower_proyek' => 'UIB',
+            'borrow_date' => '2026-06-01',
+            'purpose' => 'Test UIB',
+            'status' => BorrowRecord::STATUS_BORROWED,
+        ]);
+
+        $this->actingAs($admin)->get(route('borrows.index', ['proyek' => 'none']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Borrows/Index')
+                ->has('borrows.data', 1)
+                ->where('borrows.data.0.borrower_proyek', null)
+                ->where('filters.proyek', 'none')
+            );
+    }
+
+    public function test_borrows_index_provides_unique_sorted_projects(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'proyek' => 'BATAMINDO']);
+        User::factory()->create(['role' => User::ROLE_STAFF, 'proyek' => 'ECOGREEN']);
+
+        $item = $this->item();
+        BorrowRecord::create([
+            'item_id' => $item->id,
+            'borrower_id' => $admin->id,
+            'item_name' => $item->item_name,
+            'kode_barang' => $item->kode_barang,
+            'serial_number' => $item->serial_number,
+            'borrower_name' => $admin->name,
+            'borrower_proyek' => 'UIB',
+            'borrow_date' => '2026-06-01',
+            'purpose' => 'Test Projects List',
+            'status' => BorrowRecord::STATUS_BORROWED,
+        ]);
+
+        $this->actingAs($admin)->get(route('borrows.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Borrows/Index')
+                ->where('projects', fn ($projects) => collect($projects)->contains('BATAMINDO')
+                    && collect($projects)->contains('ECOGREEN')
+                    && collect($projects)->contains('UIB')
+                )
+            );
     }
 }
