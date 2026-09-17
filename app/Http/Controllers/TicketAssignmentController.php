@@ -36,7 +36,9 @@ class TicketAssignmentController extends Controller
             $previousAssigneeId
                 ? TicketActivity::ACTION_REASSIGNED
                 : TicketActivity::ACTION_ASSIGNED,
-            ['assignee_name' => $assignee->name]
+            // The id lets the ticket page show the assignee's current name;
+            // the name stays as a fallback in case the id can't be resolved.
+            ['assignee_id' => $assignee->id, 'assignee_name' => $assignee->name]
         );
 
         $assignee->notify(new TicketAssignedNotification($ticket, $request->user()));

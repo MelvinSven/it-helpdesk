@@ -134,7 +134,8 @@ class BorrowController extends Controller
                 'item_name' => $locked->item_name,
                 'kode_barang' => $locked->kode_barang,
                 'serial_number' => $locked->serial_number,
-                // Snapshot the name so history survives a later rename.
+                // Copied for search/filter; User::booted() keeps these two
+                // in step when the user's name or proyek changes.
                 'borrower_name' => $borrower->name,
                 'borrower_proyek' => $borrower->proyek,
                 'borrow_date' => $validated['borrow_date'],

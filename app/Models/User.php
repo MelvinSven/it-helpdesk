@@ -44,6 +44,25 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function booted(): void
+    {
+        // Borrow records keep a copy of the borrower's name and proyek so the
+        // borrow list can search/filter on them without joining users. Keep
+        // those copies in step with the user so a rename or project move shows
+        // up everywhere. Any Eloquent save fires this (admin edit, profile
+        // page, seeders); raw query-builder updates on users bypass it.
+        static::updated(function (User $user) {
+            if (! $user->wasChanged(['name', 'proyek'])) {
+                return;
+            }
+
+            BorrowRecord::where('borrower_id', $user->id)->update([
+                'borrower_name' => $user->name,
+                'borrower_proyek' => $user->proyek,
+            ]);
+        });
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;

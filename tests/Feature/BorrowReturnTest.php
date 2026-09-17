@@ -52,7 +52,7 @@ class BorrowReturnTest extends TestCase
             'item_id' => $item->id,
             'item_name' => 'Test Laptop',
             'kode_barang' => 'LIX-EL-TEST-0001',
-            // Borrower is linked to the real user and the name is snapshotted.
+            // Borrower is linked to the real user and the name is copied.
             'borrower_id' => $borrower->id,
             'borrower_name' => 'Andi Peminjam',
             'status' => BorrowRecord::STATUS_BORROWED,

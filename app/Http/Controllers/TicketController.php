@@ -107,6 +107,25 @@ class TicketController extends Controller
 
         $ticket->load($relations);
 
+        if ($canViewActivities) {
+            // Activity meta keeps the assignee's name as it was at assignment
+            // time; swap in the current name so renames show up in the log.
+            $assigneeNames = User::whereIn(
+                'id',
+                $ticket->activities->pluck('meta.assignee_id')->filter()->unique()
+            )->pluck('name', 'id');
+
+            $ticket->activities->each(function (TicketActivity $activity) use ($assigneeNames) {
+                $assigneeId = $activity->meta['assignee_id'] ?? null;
+
+                if ($assigneeId !== null && $assigneeNames->has($assigneeId)) {
+                    $activity->meta = array_merge($activity->meta, [
+                        'assignee_name' => $assigneeNames[$assigneeId],
+                    ]);
+                }
+            });
+        }
+
         return Inertia::render('Tickets/Show', [
             'ticket' => $ticket,
             'can' => [
