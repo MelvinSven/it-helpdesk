@@ -74,6 +74,7 @@ class UserController extends Controller
     public function update(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
+            'user_id' => ['required', 'string', 'max:50', Rule::unique('users', 'user_id')->ignore($user->id)],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', Rule::unique('users', 'email')->ignore($user->id)],
             'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_STAFF, User::ROLE_IT_SUPPORT])],
